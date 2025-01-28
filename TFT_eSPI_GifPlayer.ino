@@ -277,22 +277,28 @@ void setup()
 
 void loop()
 {
-  tft.fillScreen(TFT_BLACK);
+  static bool played = false;
+  
+  if (!played) {
+    tft.fillScreen(TFT_BLACK);
 
-  const char * fileName = GifFiles[currentFile++%totalFiles].c_str();
-  const char * fileDir = "/gif/";
-  char * filePath = (char*)malloc(strlen(fileName)+strlen(fileDir)+1);
-  strcpy(filePath, fileDir);
-  strcat(filePath, fileName);
+    const char * fileName = GifFiles[0].c_str(); // Only use first GIF
+    const char * fileDir = "/gif/";
+    char * filePath = (char*)malloc(strlen(fileName)+strlen(fileDir)+1);
+    strcpy(filePath, fileDir);
+    strcat(filePath, fileName);
 
-  int loops = maxLoopIterations; // max loops
-  int durationControl = maxLoopsDuration; // force break loop after xxx ms
-
-  while(loops-->0 && durationControl > 0 ) {
-    durationControl -= gifPlay( (char*)filePath );
-    gif.reset();
+    // Open GIF and play only first frame
+    gif.begin(BIG_ENDIAN_PIXELS);
+    if (gif.open(filePath, GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw)) {
+      int frameDelay;
+      gif.playFrame(false, &frameDelay); // Play single frame
+      gif.close();
+    }
+    
+    free(filePath);
+    played = true;
   }
-  free(filePath);
-
+  delay(1000); // Prevent busy loop
 }
 
