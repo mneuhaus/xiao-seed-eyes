@@ -300,7 +300,7 @@ void loop() {
   // Define eye parameters
   int centerX = tft.width() / 2;
   int centerY = tft.height() / 2;
-  int eyeRadius = tft.width() / 3; // Increased eye size
+  int eyeRadius = tft.width() / 2; // Fill display with eye
   
   if (isBlinking) {
     // Render closed eye: a simple horizontal line
