@@ -278,35 +278,11 @@ void setup()
 
 
 void loop() {
-  // Alternative camera lens focusing effect with iris animation for 3D printed Wall-E.
-  static uint32_t startTime = millis();
-  uint32_t now = millis();
-  // Oscillate focus factor between 0 and 1 using a sine wave for lens focus.
-  float factor = (sin((now - startTime) / 1000.0 * 2 * PI) + 1.0) / 2.0;
-  
-  int centerX = tft.width() / 2;
-  int centerY = tft.height() / 2;
-  int minRadius = tft.width() / 6;  // Minimum lens aperture.
-  int maxRadius = tft.width() / 2;  // Maximum lens aperture.
-  int lensRadius = minRadius + (maxRadius - minRadius) * factor;
-  
-  // Clear the display.
   tft.fillScreen(TFT_BLACK);
-  // Draw the outer lens ring.
-  tft.drawCircle(centerX, centerY, lensRadius, TFT_WHITE);
-  // Draw the inner lens element to simulate focusing.
-  int innerRadius = lensRadius / 2;
-  tft.fillCircle(centerX, centerY, innerRadius, TFT_BLUE);
-  // Draw a highlight to simulate specular reflection.
-  tft.fillCircle(centerX - innerRadius / 4, centerY - innerRadius / 4, innerRadius / 8, TFT_WHITE);
-  
-  // Add iris effect: simulate closing/opening iris overlay.
-  // Iris oscillates every 2 seconds.
-  float irisFactor = (sin((now - startTime) / 2000.0 * 2 * PI) + 1.0) / 2.0;
-  // When irisFactor is 1, iris is open (small overlay); when 0, iris is closed (large overlay).
-  int irisOverlayRadius = innerRadius + (lensRadius - innerRadius) * (1.0 - irisFactor);
-  tft.fillCircle(centerX, centerY, irisOverlayRadius, TFT_BLACK);
-  
-  delay(30);
+  tft.setTextColor(TFT_RED, TFT_BLACK);
+  int x = tft.width() / 2 - 60;
+  int y = tft.height() / 2 - 10;
+  tft.drawString("Hallo Jakob ❤️", x, y);
+  delay(1000);
 }
 
