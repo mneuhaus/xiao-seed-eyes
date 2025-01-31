@@ -295,8 +295,9 @@ void loop()
   unsigned long frameStart = millis();
   if (gif.playFrame(true, &frameDelay)) {
     unsigned long frameTime = millis() - frameStart;
-    if (frameDelay > frameTime) {
-      delay(frameDelay - frameTime);
+    unsigned long adjustedFrameDelay = frameDelay / 2;
+    if (adjustedFrameDelay > frameTime) {
+      delay(adjustedFrameDelay - frameTime);
     }
   } else {
     gif.close();
