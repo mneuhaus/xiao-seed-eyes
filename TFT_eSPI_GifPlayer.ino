@@ -278,36 +278,42 @@ void setup()
 
 
 void loop() {
-  // Animated cartoonish simplified eye rendering with moving pupil
+  // Animated cartoonish simplified eye rendering with random emotional expressions.
   static uint32_t lastBlinkTime = 0;
   static bool isBlinking = false;
-  const uint32_t blinkInterval = 3000; // every 3000ms, perform a blink
-  const uint32_t blinkDuration = 150;   // blink lasts 150ms
-  
+  const uint32_t blinkInterval = 3000; // Blink every 3000ms
+  const uint32_t blinkDuration = 150;   // Blink lasts 150ms
   uint32_t now = millis();
   
-  // Check if it's time to start a blink cycle
+  // Blink control
   if (!isBlinking && (now - lastBlinkTime >= blinkInterval)) {
     isBlinking = true;
     lastBlinkTime = now;
   }
-  // End blink cycle after specified duration
   if (isBlinking && (now - lastBlinkTime >= blinkDuration)) {
     isBlinking = false;
     lastBlinkTime = now;
   }
   
-  // Define eye parameters
+  // Update emotion every 5 seconds.
+  static uint32_t emotionChangeTime = 0;
+  static uint8_t currentEmotion = 0; // 0: neutral, 1: happy, 2: angry, 3: fear
+  if (now - emotionChangeTime >= 5000) {
+    currentEmotion = random(0, 4);
+    emotionChangeTime = now;
+  }
+  
   int centerX = tft.width() / 2;
   int centerY = tft.height() / 2;
   int eyeRadius = tft.width() / 2; // Fill display with eye
   
   if (isBlinking) {
-    // Render closed eye: a simple horizontal line
+    // Render closed eye as a horizontal line.
     tft.drawFastHLine(centerX - eyeRadius, centerY, eyeRadius * 2, TFT_WHITE);
   } else {
-    // Render open eye with moving pupil without clearing the pupil itself
+    // Render open eye based on emotion.
     tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE); // White eyeball
+    
     int pupilRadius = eyeRadius / 3;
     int maxOffset = (int)((eyeRadius - pupilRadius) * 0.5);
     static uint32_t lastUpdateTime = 0;
@@ -315,15 +321,35 @@ void loop() {
     static int targetOffsetX = 0, targetOffsetY = 0;
     static int prevPupilOffsetX = 0, prevPupilOffsetY = 0;
     uint32_t currentTime = millis();
-    uint32_t interval = 500; // update every 500ms
+    uint32_t interval = 500; // Update every 500ms
     uint32_t elapsed = currentTime - lastUpdateTime;
+    
     if (elapsed >= interval) {
-      // Erase previous pupil by restoring the white eyeball area at its location
+      // Erase previous pupil by restoring the white eyeball area.
       tft.fillCircle(centerX + prevPupilOffsetX, centerY + prevPupilOffsetY, pupilRadius, TFT_WHITE);
       startOffsetX = targetOffsetX;
       startOffsetY = targetOffsetY;
-      targetOffsetX = random(-maxOffset, maxOffset + 1);
-      targetOffsetY = random(-maxOffset, maxOffset + 1);
+      // Set target offsets based on current emotion.
+      switch (currentEmotion) {
+        case 0: // Neutral: random movement.
+          targetOffsetX = random(-maxOffset, maxOffset + 1);
+          targetOffsetY = random(-maxOffset, maxOffset + 1);
+          break;
+        case 1: // Happy: pupil moves upward.
+          targetOffsetX = random(-maxOffset/2, maxOffset/2 + 1);
+          targetOffsetY = random(-maxOffset, 0 + 1);
+          break;
+        case 2: // Angry: pupil shifts to the side with a slight downward bias.
+          targetOffsetX = random(-maxOffset, maxOffset + 1);
+          targetOffsetY = random(0, maxOffset/2 + 1);
+          // Draw an angry eyebrow.
+          tft.drawFastHLine(centerX - eyeRadius + 10, centerY - eyeRadius/2, eyeRadius - 20, TFT_BLACK);
+          break;
+        case 3: // Fear: erratic movement.
+          targetOffsetX = random(-maxOffset, maxOffset + 1);
+          targetOffsetY = random(-maxOffset, maxOffset + 1);
+          break;
+      }
       lastUpdateTime = currentTime;
       elapsed = 0;
     }
@@ -336,7 +362,7 @@ void loop() {
     prevPupilOffsetY = pupilOffsetY;
   }
   
-  // Small delay for frame rate control (~33 FPS)
+  // Frame rate control (~33 FPS)
   delay(30);
 }
 
