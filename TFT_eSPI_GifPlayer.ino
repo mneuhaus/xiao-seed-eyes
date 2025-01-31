@@ -279,10 +279,18 @@ void setup()
 
 void loop() {
   tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_RED, TFT_BLACK);
-  int x = tft.width() / 2 - 60;
-  int y = tft.height() / 2 - 10;
-  tft.drawString("Hallo Jakob ❤️", x, y);
-  delay(1000);
+  unsigned long time = millis();
+  for (int yPos = 0; yPos < tft.height(); yPos += 10) {
+    for (int xPos = 0; xPos < tft.width(); xPos += 10) {
+      float wave = sin((xPos + time / 10.0) * 0.05) + cos((yPos + time / 10.0) * 0.05);
+      uint16_t color = tft.color565(
+        (int)((sin(wave + time / 1000.0) + 1) * 127.5),
+        (int)((cos(wave + time / 1000.0) + 1) * 127.5),
+        (int)(((sin(wave) + cos(wave)) / 2 + 1) * 127.5)
+      );
+      tft.fillRect(xPos, yPos + (int)(10 * sin((xPos + time / 100.0) * 0.1)), 10, 10, color);
+    }
+  }
+  delay(30);
 }
 
