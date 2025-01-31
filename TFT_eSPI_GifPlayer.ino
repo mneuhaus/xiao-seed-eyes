@@ -312,9 +312,24 @@ void loop() {
     // Render open eye with moving pupil
     tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE); // White eyeball
     int pupilRadius = eyeRadius / 3;
-    float angle = (millis() % 4000) / 4000.0 * 2 * PI;
-    int pupilOffsetX = (int)((eyeRadius - pupilRadius) * 0.5 * cos(angle));
-    int pupilOffsetY = (int)((eyeRadius - pupilRadius) * 0.5 * sin(angle));
+    int maxOffset = (int)((eyeRadius - pupilRadius) * 0.5);
+    static uint32_t lastUpdateTime = 0;
+    static int startOffsetX = 0, startOffsetY = 0;
+    static int targetOffsetX = 0, targetOffsetY = 0;
+    uint32_t currentTime = millis();
+    uint32_t interval = 500; // update every 500ms
+    uint32_t elapsed = currentTime - lastUpdateTime;
+    if (elapsed >= interval) {
+      startOffsetX = targetOffsetX;
+      startOffsetY = targetOffsetY;
+      targetOffsetX = random(-maxOffset, maxOffset + 1);
+      targetOffsetY = random(-maxOffset, maxOffset + 1);
+      lastUpdateTime = currentTime;
+      elapsed = 0;
+    }
+    float factor = (float)elapsed / interval;
+    int pupilOffsetX = startOffsetX + (int)((targetOffsetX - startOffsetX) * factor);
+    int pupilOffsetY = startOffsetY + (int)((targetOffsetY - startOffsetY) * factor);
     tft.fillCircle(centerX + pupilOffsetX, centerY + pupilOffsetY, pupilRadius, TFT_BLACK); // Black pupil
     tft.fillCircle(centerX + pupilOffsetX - pupilRadius / 3, centerY + pupilOffsetY - pupilRadius / 3, pupilRadius / 4, TFT_WHITE); // Pupil highlight
   }
