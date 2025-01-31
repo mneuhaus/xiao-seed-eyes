@@ -278,91 +278,28 @@ void setup()
 
 
 void loop() {
-  // Animated cartoonish simplified eye rendering with random emotional expressions.
-  static uint32_t lastBlinkTime = 0;
-  static bool isBlinking = false;
-  const uint32_t blinkInterval = 3000; // Blink every 3000ms
-  const uint32_t blinkDuration = 150;   // Blink lasts 150ms
+  // Alternative camera lens focusing effect for 3D printed Wall-E.
+  static uint32_t startTime = millis();
   uint32_t now = millis();
-  
-  // Blink control
-  if (!isBlinking && (now - lastBlinkTime >= blinkInterval)) {
-    isBlinking = true;
-    lastBlinkTime = now;
-  }
-  if (isBlinking && (now - lastBlinkTime >= blinkDuration)) {
-    isBlinking = false;
-    lastBlinkTime = now;
-  }
-  
-  // Update emotion every 5 seconds.
-  static uint32_t emotionChangeTime = 0;
-  static uint8_t currentEmotion = 0; // 0: neutral, 1: happy, 2: angry, 3: fear
-  if (now - emotionChangeTime >= 5000) {
-    currentEmotion = random(0, 4);
-    emotionChangeTime = now;
-  }
+  // Oscillate focus factor between 0 and 1 using a sine wave.
+  float factor = (sin((now - startTime) / 1000.0 * 2 * PI) + 1.0) / 2.0;
   
   int centerX = tft.width() / 2;
   int centerY = tft.height() / 2;
-  int eyeRadius = tft.width() / 2; // Fill display with eye
+  int minRadius = tft.width() / 6;  // Minimum lens aperture.
+  int maxRadius = tft.width() / 2;  // Maximum lens aperture.
+  int lensRadius = minRadius + (maxRadius - minRadius) * factor;
   
-  if (isBlinking) {
-    // Render closed eye as a horizontal line.
-    tft.drawFastHLine(centerX - eyeRadius, centerY, eyeRadius * 2, TFT_WHITE);
-  } else {
-    // Render open eye based on emotion.
-    tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE); // White eyeball
-    
-    int pupilRadius = eyeRadius / 3;
-    int maxOffset = (int)((eyeRadius - pupilRadius) * 0.5);
-    static uint32_t lastUpdateTime = 0;
-    static int startOffsetX = 0, startOffsetY = 0;
-    static int targetOffsetX = 0, targetOffsetY = 0;
-    static int prevPupilOffsetX = 0, prevPupilOffsetY = 0;
-    uint32_t currentTime = millis();
-    uint32_t interval = 500; // Update every 500ms
-    uint32_t elapsed = currentTime - lastUpdateTime;
-    
-    if (elapsed >= interval) {
-      // Erase previous pupil by restoring the white eyeball area.
-      tft.fillCircle(centerX + prevPupilOffsetX, centerY + prevPupilOffsetY, pupilRadius, TFT_WHITE);
-      startOffsetX = targetOffsetX;
-      startOffsetY = targetOffsetY;
-      // Set target offsets based on current emotion.
-      switch (currentEmotion) {
-        case 0: // Neutral: random movement.
-          targetOffsetX = random(-maxOffset, maxOffset + 1);
-          targetOffsetY = random(-maxOffset, maxOffset + 1);
-          break;
-        case 1: // Happy: pupil moves upward.
-          targetOffsetX = random(-maxOffset/2, maxOffset/2 + 1);
-          targetOffsetY = random(-maxOffset, 0 + 1);
-          break;
-        case 2: // Angry: pupil shifts to the side with a slight downward bias.
-          targetOffsetX = random(-maxOffset, maxOffset + 1);
-          targetOffsetY = random(0, maxOffset/2 + 1);
-          // Draw an angry eyebrow.
-          tft.drawFastHLine(centerX - eyeRadius + 10, centerY - eyeRadius/2, eyeRadius - 20, TFT_BLACK);
-          break;
-        case 3: // Fear: erratic movement.
-          targetOffsetX = random(-maxOffset, maxOffset + 1);
-          targetOffsetY = random(-maxOffset, maxOffset + 1);
-          break;
-      }
-      lastUpdateTime = currentTime;
-      elapsed = 0;
-    }
-    float factor = (float)elapsed / interval;
-    int pupilOffsetX = startOffsetX + (int)((targetOffsetX - startOffsetX) * factor);
-    int pupilOffsetY = startOffsetY + (int)((targetOffsetY - startOffsetY) * factor);
-    tft.fillCircle(centerX + pupilOffsetX, centerY + pupilOffsetY, pupilRadius, TFT_BLACK); // Draw pupil
-    tft.fillCircle(centerX + pupilOffsetX - pupilRadius / 3, centerY + pupilOffsetY - pupilRadius / 3, pupilRadius / 4, TFT_WHITE); // Pupil highlight
-    prevPupilOffsetX = pupilOffsetX;
-    prevPupilOffsetY = pupilOffsetY;
-  }
+  // Clear the display.
+  tft.fillScreen(TFT_BLACK);
+  // Draw the outer lens ring.
+  tft.drawCircle(centerX, centerY, lensRadius, TFT_WHITE);
+  // Draw the inner lens element to simulate focusing.
+  int innerRadius = lensRadius / 2;
+  tft.fillCircle(centerX, centerY, innerRadius, TFT_BLUE);
+  // Draw a highlight to simulate specular reflection.
+  tft.fillCircle(centerX - innerRadius / 4, centerY - innerRadius / 4, innerRadius / 8, TFT_WHITE);
   
-  // Frame rate control (~33 FPS)
   delay(30);
 }
 
