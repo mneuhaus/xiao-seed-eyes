@@ -306,17 +306,20 @@ void loop() {
     // Render closed eye: a simple horizontal line
     tft.drawFastHLine(centerX - eyeRadius, centerY, eyeRadius * 2, TFT_WHITE);
   } else {
-    // Render open eye with moving pupil
+    // Render open eye with moving pupil without clearing the pupil itself
     tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE); // White eyeball
     int pupilRadius = eyeRadius / 3;
     int maxOffset = (int)((eyeRadius - pupilRadius) * 0.5);
     static uint32_t lastUpdateTime = 0;
     static int startOffsetX = 0, startOffsetY = 0;
     static int targetOffsetX = 0, targetOffsetY = 0;
+    static int prevPupilOffsetX = 0, prevPupilOffsetY = 0;
     uint32_t currentTime = millis();
     uint32_t interval = 500; // update every 500ms
     uint32_t elapsed = currentTime - lastUpdateTime;
     if (elapsed >= interval) {
+      // Erase previous pupil by restoring the white eyeball area at its location
+      tft.fillCircle(centerX + prevPupilOffsetX, centerY + prevPupilOffsetY, pupilRadius, TFT_WHITE);
       startOffsetX = targetOffsetX;
       startOffsetY = targetOffsetY;
       targetOffsetX = random(-maxOffset, maxOffset + 1);
@@ -327,8 +330,10 @@ void loop() {
     float factor = (float)elapsed / interval;
     int pupilOffsetX = startOffsetX + (int)((targetOffsetX - startOffsetX) * factor);
     int pupilOffsetY = startOffsetY + (int)((targetOffsetY - startOffsetY) * factor);
-    tft.fillCircle(centerX + pupilOffsetX, centerY + pupilOffsetY, pupilRadius, TFT_BLACK); // Black pupil
+    tft.fillCircle(centerX + pupilOffsetX, centerY + pupilOffsetY, pupilRadius, TFT_BLACK); // Draw pupil
     tft.fillCircle(centerX + pupilOffsetX - pupilRadius / 3, centerY + pupilOffsetY - pupilRadius / 3, pupilRadius / 4, TFT_WHITE); // Pupil highlight
+    prevPupilOffsetX = pupilOffsetX;
+    prevPupilOffsetY = pupilOffsetY;
   }
   
   // Small delay for frame rate control (~33 FPS)
