@@ -301,12 +301,6 @@ void loop() {
   int centerX = tft.width() / 2;
   int centerY = tft.height() / 2;
   int eyeRadius = tft.width() / 3; // Increased eye size
-  // Clear only the eye region to avoid flickering
-  int margin = 5;
-  int left = centerX - eyeRadius - margin;
-  int top = centerY - eyeRadius - margin;
-  int diameter = 2 * (eyeRadius + margin);
-  tft.fillRect(left, top, diameter, diameter, TFT_BLACK);
   
   if (isBlinking) {
     // Render closed eye: a simple horizontal line
