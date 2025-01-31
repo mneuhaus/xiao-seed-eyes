@@ -268,7 +268,8 @@ void setup()
 
   tft.begin();
   tft.fillScreen(TFT_BLACK);
-
+  gif.begin(BIG_ENDIAN_PIXELS);
+  
   totalFiles = getGifInventory( "/gif" ); // scan the SD card GIF folder
 
 }
@@ -277,20 +278,26 @@ void setup()
 
 void loop()
 {
-  const char filePath[] = "/gif/eye.gif";
-  while (true) {
-    tft.fillScreen(TFT_BLACK);
-    gif.begin(BIG_ENDIAN_PIXELS);
+  static const char filePath[] = "/gif/eye.gif";
+  static bool fileOpened = false;
+  
+  if (!fileOpened) {
     if (gif.open((char*)filePath, GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw)) {
-      int frameDelay;
-      while (gif.playFrame(true, &frameDelay)) {
-        delay(frameDelay);
-      }
-      gif.close();
+      fileOpened = true;
     } else {
       // If opening eye.gif fails, wait before retrying
       delay(1000);
+      return;
     }
+  }
+  
+  int frameDelay;
+  if (gif.playFrame(true, &frameDelay)) {
+    delay(frameDelay);
+  } else {
+    gif.close();
+    fileOpened = false;
+    tft.fillScreen(TFT_BLACK);
   }
 }
 
