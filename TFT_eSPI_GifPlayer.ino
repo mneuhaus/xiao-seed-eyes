@@ -276,32 +276,46 @@ void setup()
 
 
 
-void loop()
-{
-  static const char filePath[] = "/gif/eye.gif";
-  static bool fileOpened = false;
+void loop() {
+  // Animated cartoonish simplified eye rendering
+  static uint32_t lastBlinkTime = 0;
+  static bool isBlinking = false;
+  const uint32_t blinkInterval = 3000; // every 3000ms, perform a blink
+  const uint32_t blinkDuration = 150;   // blink lasts 150ms
   
-  if (!fileOpened) {
-    if (gif.open((char*)filePath, GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw)) {
-      fileOpened = true;
-    } else {
-      // If opening eye.gif fails, wait before retrying
-      delay(1000);
-      return;
-    }
+  uint32_t now = millis();
+  
+  // Check if it's time to start a blink cycle
+  if (!isBlinking && (now - lastBlinkTime >= blinkInterval)) {
+    isBlinking = true;
+    lastBlinkTime = now;
+  }
+  // End blink cycle after specified duration
+  if (isBlinking && (now - lastBlinkTime >= blinkDuration)) {
+    isBlinking = false;
+    lastBlinkTime = now;
   }
   
-  int frameDelay;
-  unsigned long frameStart = millis();
-  if (gif.playFrame(true, &frameDelay)) {
-    unsigned long frameTime = millis() - frameStart;
-    if (frameDelay > frameTime) {
-      delay(frameDelay - frameTime);
-    }
+  // Clear the screen
+  tft.fillScreen(TFT_BLACK);
+  
+  // Define eye parameters
+  int centerX = tft.width() / 2;
+  int centerY = tft.height() / 2;
+  int eyeRadius = tft.width() / 6;
+  
+  if (isBlinking) {
+    // Render closed eye: a simple horizontal line
+    tft.drawFastHLine(centerX - eyeRadius, centerY, eyeRadius * 2, TFT_WHITE);
   } else {
-    gif.close();
-    fileOpened = false;
-    tft.fillScreen(TFT_BLACK);
+    // Render open eye
+    tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE);         // White eyeball
+    int pupilRadius = eyeRadius / 3;
+    tft.fillCircle(centerX, centerY, pupilRadius, TFT_BLACK);          // Black pupil
+    tft.fillCircle(centerX - pupilRadius / 2, centerY - pupilRadius / 2, pupilRadius / 4, TFT_WHITE); // Pupil highlight
   }
+  
+  // Small delay for frame rate control (~33 FPS)
+  delay(30);
 }
 
