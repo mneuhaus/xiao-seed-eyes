@@ -3,6 +3,7 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <SD.h>
+#include <math.h>
 
 #ifdef ARDUINO_ARCH_RP2350
 #undef PICO_BUILD
@@ -277,7 +278,7 @@ void setup()
 
 
 void loop() {
-  // Animated cartoonish simplified eye rendering
+  // Animated cartoonish simplified eye rendering with moving pupil
   static uint32_t lastBlinkTime = 0;
   static bool isBlinking = false;
   const uint32_t blinkInterval = 3000; // every 3000ms, perform a blink
@@ -302,17 +303,20 @@ void loop() {
   // Define eye parameters
   int centerX = tft.width() / 2;
   int centerY = tft.height() / 2;
-  int eyeRadius = tft.width() / 6;
+  int eyeRadius = tft.width() / 3; // Increased eye size
   
   if (isBlinking) {
     // Render closed eye: a simple horizontal line
     tft.drawFastHLine(centerX - eyeRadius, centerY, eyeRadius * 2, TFT_WHITE);
   } else {
-    // Render open eye
-    tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE);         // White eyeball
+    // Render open eye with moving pupil
+    tft.fillCircle(centerX, centerY, eyeRadius, TFT_WHITE); // White eyeball
     int pupilRadius = eyeRadius / 3;
-    tft.fillCircle(centerX, centerY, pupilRadius, TFT_BLACK);          // Black pupil
-    tft.fillCircle(centerX - pupilRadius / 2, centerY - pupilRadius / 2, pupilRadius / 4, TFT_WHITE); // Pupil highlight
+    float angle = (millis() % 4000) / 4000.0 * 2 * PI;
+    int pupilOffsetX = (int)((eyeRadius - pupilRadius) * 0.5 * cos(angle));
+    int pupilOffsetY = (int)((eyeRadius - pupilRadius) * 0.5 * sin(angle));
+    tft.fillCircle(centerX + pupilOffsetX, centerY + pupilOffsetY, pupilRadius, TFT_BLACK); // Black pupil
+    tft.fillCircle(centerX + pupilOffsetX - pupilRadius / 3, centerY + pupilOffsetY - pupilRadius / 3, pupilRadius / 4, TFT_WHITE); // Pupil highlight
   }
   
   // Small delay for frame rate control (~33 FPS)
