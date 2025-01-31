@@ -277,28 +277,20 @@ void setup()
 
 void loop()
 {
-  static bool played = false;
-  
-  if (!played) {
+  const char filePath[] = "/gif/eye.gif";
+  while (true) {
     tft.fillScreen(TFT_BLACK);
-
-    const char * fileName = GifFiles[0].c_str(); // Only use first GIF
-    const char * fileDir = "/gif/";
-    char * filePath = (char*)malloc(strlen(fileName)+strlen(fileDir)+1);
-    strcpy(filePath, fileDir);
-    strcat(filePath, fileName);
-
-    // Open GIF and play only first frame
     gif.begin(BIG_ENDIAN_PIXELS);
-    if (gif.open(filePath, GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw)) {
+    if (gif.open((char*)filePath, GIFOpenFile, GIFCloseFile, GIFReadFile, GIFSeekFile, GIFDraw)) {
       int frameDelay;
-      gif.playFrame(false, &frameDelay); // Play single frame
+      while (gif.playFrame(true, &frameDelay)) {
+        delay(frameDelay);
+      }
       gif.close();
+    } else {
+      // If opening eye.gif fails, wait before retrying
+      delay(1000);
     }
-    
-    free(filePath);
-    played = true;
   }
-  delay(1000); // Prevent busy loop
 }
 
