@@ -292,8 +292,12 @@ void loop()
   }
   
   int frameDelay;
+  unsigned long frameStart = millis();
   if (gif.playFrame(true, &frameDelay)) {
-    delay(frameDelay);
+    unsigned long frameTime = millis() - frameStart;
+    if (frameDelay > frameTime) {
+      delay(frameDelay - frameTime);
+    }
   } else {
     gif.close();
     fileOpened = false;
