@@ -13,6 +13,7 @@ class BLECallbacks : public NimBLECharacteristicCallbacks {
     std::string value = pCharacteristic->getValue();
     Serial.print("BLE command received: ");
     Serial.println(value.c_str());
+    Serial.flush();
     if (!value.empty()) {
       bleCommand = value;
     }
