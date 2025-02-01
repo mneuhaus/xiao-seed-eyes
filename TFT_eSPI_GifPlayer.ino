@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <math.h>
+#include <algorithm>
 #include <NimBLEDevice.h>
 
 std::string bleCommand = "";
@@ -11,6 +12,8 @@ std::string bleCommand = "";
 class BLECallbacks : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* pCharacteristic) {
     std::string value = pCharacteristic->getValue();
+    value.erase(std::remove(value.begin(), value.end(), '\n'), value.end());
+    value.erase(std::remove(value.begin(), value.end(), '\r'), value.end());
     Serial.print("BLE command received: ");
     Serial.println(value.c_str());
     Serial.flush();
