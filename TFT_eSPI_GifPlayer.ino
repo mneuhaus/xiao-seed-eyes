@@ -261,11 +261,11 @@ void setup() {
   NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
   pAdvertising->addServiceUUID("12345678-1234-5678-1234-56789abcdef0");
   pAdvertising->start();
-
+  Serial.begin(115200);
+  Serial.println("Advertising started!");
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.drawString("EyeController Ready", tft.width()/2 - 70, tft.height()/2);
-  Serial.begin(115200);
   Serial.print("BLE Address: ");
   Serial.println(NimBLEDevice::getAddress().toString().c_str());
   delay(2000);
