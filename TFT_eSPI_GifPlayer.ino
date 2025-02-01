@@ -337,6 +337,7 @@ void loop() {
           tft.fillRect(xPos, yPos + (int)(10 * sin((xPos + time / 100.0) * 0.1)), 10, 10, color);
         }
       }
+      Serial.println("Debug: Executed command: colorful");
     }
     bleCommand = "";
   } else {
