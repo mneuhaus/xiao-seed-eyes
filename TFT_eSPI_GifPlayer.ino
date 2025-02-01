@@ -260,7 +260,9 @@ void setup() {
   pService->start();
   NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
   pAdvertising->addServiceUUID("12345678-1234-5678-1234-56789abcdef0");
-  pAdvertising->setScanResponse(true);
+  NimBLEAdvertisementData scanResponse;
+  scanResponse.setName("EyeController");
+  pAdvertising->setScanResponseData(scanResponse);
   pAdvertising->start();
   Serial.begin(115200);
   Serial.println("Advertising started!");
