@@ -17,6 +17,16 @@ class BLECallbacks : public NimBLECharacteristicCallbacks {
   }
 };
 
+class ServerCallbacks : public NimBLEServerCallbacks {
+  void onConnect(NimBLEServer* pServer) {
+    Serial.println("Client connected");
+  }
+  void onDisconnect(NimBLEServer* pServer) {
+    Serial.println("Client disconnected - Restart advertising");
+    NimBLEDevice::startAdvertising();
+  }
+};
+
 #ifdef ARDUINO_ARCH_RP2350
 #undef PICO_BUILD
 #endif
@@ -251,6 +261,7 @@ void setup() {
 
   NimBLEDevice::init("EyeController");
   NimBLEServer *pServer = NimBLEDevice::createServer();
+  pServer->setCallbacks(new ServerCallbacks());
   NimBLEService *pService = pServer->createService("12345678-1234-5678-1234-56789abcdef0");
   NimBLECharacteristic *pCharacteristic = pService->createCharacteristic(
       "abcdefab-cdef-1234-5678-1234567890ab",
