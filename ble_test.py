@@ -6,9 +6,12 @@ address = "34:85:18:71:f5:35"
 CHAR_UUID = "abcdefab-cdef-1234-5678-1234567890ab"
 
 async def send_command(command):
-    async with BleakClient(address) as client:
-        await client.write_gatt_char(CHAR_UUID, command.encode())
-        print(f"Sent command: {command}")
+    try:
+        async with BleakClient(address) as client:
+            await client.write_gatt_char(CHAR_UUID, command.encode())
+            print(f"Sent command: {command}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     import sys
