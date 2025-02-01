@@ -265,6 +265,9 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.drawString("EyeController Ready", tft.width()/2 - 70, tft.height()/2);
+  Serial.begin(115200);
+  Serial.print("BLE Address: ");
+  Serial.println(NimBLEDevice::getAddress().toString().c_str());
   delay(2000);
 }
 
