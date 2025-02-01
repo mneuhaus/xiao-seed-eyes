@@ -232,65 +232,73 @@ int getGifInventory( const char* basePath )
   return amount;
 }
 
-void setup()
-{
-  // Serial.begin(115200);
-  // while (!Serial) ;
-  // pinMode(D6, OUTPUT);
-  // digitalWrite(D6, HIGH);
+void setup() {
   tft.begin();
   tft.setRotation(2);
-
-  int attempts = 0;
-  int maxAttempts = 50;
-  int delayBetweenAttempts = 300;
-  bool isblinked = false;
-
-  pinMode(D2, OUTPUT);
-  while(! SD.begin(D2) ) {
-    // log_n("SD Card mount failed! (attempt %d of %d)", attempts, maxAttempts );
-    isblinked = !isblinked;
-    attempts++;
-    if( isblinked ) {
-      tft.setTextColor( TFT_WHITE, TFT_BLACK );
-    } else {
-      tft.setTextColor( TFT_BLACK, TFT_WHITE );
-    }
-    tft.drawString( "INSERT SD", tft.width()/2, tft.height()/2 );
-
-    if( attempts > maxAttempts ) {
-      // log_n("Giving up");
-    }
-    delay( delayBetweenAttempts );
-  }
-
-  // log_n("SD Card mounted!");
-  // Serial.print("SD Card mounted!");
-
-  tft.begin();
   tft.fillScreen(TFT_BLACK);
-  gif.begin(BIG_ENDIAN_PIXELS);
-  
-  totalFiles = getGifInventory( "/gif" ); // scan the SD card GIF folder
 
+  NimBLEDevice::init("EyeController");
+  NimBLEServer *pServer = NimBLEDevice::createServer();
+  NimBLEService *pService = pServer->createService("12345678-1234-5678-1234-56789abcdef0");
+  NimBLECharacteristic *pCharacteristic = pService->createCharacteristic(
+      "abcdefab-cdef-1234-5678-1234567890ab",
+      NIMBLE_PROPERTY::WRITE
+  );
+  pCharacteristic->setCallbacks(new BLECallbacks());
+  pService->start();
+  NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID("12345678-1234-5678-1234-56789abcdef0");
+  pAdvertising->start();
+
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("EyeController Ready", tft.width()/2 - 70, tft.height()/2);
+  delay(2000);
 }
 
 
 
 void loop() {
-  tft.fillScreen(TFT_BLACK);
-  unsigned long time = millis();
-  for (int yPos = 0; yPos < tft.height(); yPos += 10) {
-    for (int xPos = 0; xPos < tft.width(); xPos += 10) {
-      float wave = sin((xPos + time / 10.0) * 0.05) + cos((yPos + time / 10.0) * 0.05);
-      uint16_t color = tft.color565(
-        (int)((sin(wave + time / 1000.0) + 1) * 127.5),
-        (int)((cos(wave + time / 1000.0) + 1) * 127.5),
-        (int)(((sin(wave) + cos(wave)) / 2 + 1) * 127.5)
-      );
-      tft.fillRect(xPos, yPos + (int)(10 * sin((xPos + time / 100.0) * 0.1)), 10, 10, color);
+  if (bleCommand != "") {
+    if (bleCommand == "open") {
+      // Draw open eye: white sclera, blue iris, black pupil.
+      tft.fillScreen(TFT_BLACK);
+      tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
+      tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
+      tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
+    } else if (bleCommand == "close") {
+      // Draw closed eye: a horizontal white line.
+      tft.fillScreen(TFT_BLACK);
+      tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
+      tft.drawLine(tft.width()/2 - 50, tft.height()/2 + 1, tft.width()/2 + 50, tft.height()/2 + 1, TFT_WHITE);
+    } else if (bleCommand == "blink") {
+      // Blink: closed then open.
+      tft.fillScreen(TFT_BLACK);
+      tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
+      delay(200);
+      tft.fillScreen(TFT_BLACK);
+      tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
+      tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
+      tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
+    } else if (bleCommand == "colorful") {
+      // Funky colorful wavy effect.
+      unsigned long time = millis();
+      for (int yPos = 0; yPos < tft.height(); yPos += 10) {
+        for (int xPos = 0; xPos < tft.width(); xPos += 10) {
+          float wave = sin((xPos + time / 10.0) * 0.05) + cos((yPos + time / 10.0) * 0.05);
+          uint16_t color = tft.color565(
+            (int)((sin(wave + time / 1000.0) + 1) * 127.5),
+            (int)((cos(wave + time / 1000.0) + 1) * 127.5),
+            (int)(((sin(wave) + cos(wave)) / 2 + 1) * 127.5)
+          );
+          tft.fillRect(xPos, yPos + (int)(10 * sin((xPos + time / 100.0) * 0.1)), 10, 10, color);
+        }
+      }
     }
+    bleCommand = "";
+  } else {
+    // No new command: maintain current display.
+    delay(100);
   }
-  delay(30);
 }
 
