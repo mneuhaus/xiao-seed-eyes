@@ -289,6 +289,8 @@ void setup() {
 
 void loop() {
   if (bleCommand != "") {
+    Serial.print("Received BLE command: ");
+    Serial.println(bleCommand.c_str());
     if (bleCommand == "open") {
       // Draw open eye: white sclera, blue iris, black pupil.
       tft.fillScreen(TFT_BLACK);
