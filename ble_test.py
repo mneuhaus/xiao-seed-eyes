@@ -21,9 +21,10 @@ async def send_command(command):
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("Usage: python3 ble_test.py <open|close|blink|colorful>")
-    else:
-        command = sys.argv[1]
-        asyncio.run(send_command(command))
+    asyncio.run(scan_devices())
+    # import sys
+    # if len(sys.argv) < 2:
+    #     print("Usage: python3 ble_test.py <open|close|blink|colorful>")
+    # else:
+    #     command = sys.argv[1]
+    #     asyncio.run(send_command(command))
