@@ -298,17 +298,21 @@ void loop() {
   if (bleCommand != "") {
     Serial.print("Received BLE command: ");
     Serial.println(bleCommand.c_str());
+    Serial.print("Debug: Processing command: ");
+    Serial.println(bleCommand.c_str());
     if (bleCommand == "open") {
       // Draw open eye: white sclera, blue iris, black pupil.
       tft.fillScreen(TFT_BLACK);
       tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
       tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
       tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
+      Serial.println("Debug: Executed command: open");
     } else if (bleCommand == "close") {
       // Draw closed eye: a horizontal white line.
       tft.fillScreen(TFT_BLACK);
       tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
       tft.drawLine(tft.width()/2 - 50, tft.height()/2 + 1, tft.width()/2 + 50, tft.height()/2 + 1, TFT_WHITE);
+      Serial.println("Debug: Executed command: close");
     } else if (bleCommand == "blink") {
       // Blink: closed then open.
       tft.fillScreen(TFT_BLACK);
@@ -318,6 +322,7 @@ void loop() {
       tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
       tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
       tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
+      Serial.println("Debug: Executed command: blink");
     } else if (bleCommand == "colorful") {
       // Funky colorful wavy effect.
       unsigned long time = millis();
