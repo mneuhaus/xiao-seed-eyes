@@ -9,7 +9,7 @@
 std::string bleCommand = "";
 
 class BLECallbacks : public NimBLECharacteristicCallbacks {
-  void onWrite(NimBLECharacteristic* pCharacteristic) override {
+  void onWrite(NimBLECharacteristic* pCharacteristic) {
     std::string value = pCharacteristic->getValue();
     if (!value.empty()) {
       bleCommand = value;
