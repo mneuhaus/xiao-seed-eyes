@@ -1,5 +1,12 @@
 import asyncio
-from bleak import BleakClient
+from bleak import BleakClient, BleakScanner
+
+# Debug function to scan for BLE devices.
+async def scan_devices():
+    devices = await BleakScanner.discover()
+    print("Discovered devices:")
+    for device in devices:
+        print(device)
 
 # Replace with the actual BLE MAC address of your ESP32S3
 address = "34:85:18:71:f5:35"
