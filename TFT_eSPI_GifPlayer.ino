@@ -4,6 +4,18 @@
 #include <SPI.h>
 #include <SD.h>
 #include <math.h>
+#include <NimBLEDevice.h>
+
+std::string bleCommand = "";
+
+class BLECallbacks : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* pCharacteristic) override {
+    std::string value = pCharacteristic->getValue();
+    if (!value.empty()) {
+      bleCommand = value;
+    }
+  }
+};
 
 #ifdef ARDUINO_ARCH_RP2350
 #undef PICO_BUILD
