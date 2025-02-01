@@ -2,7 +2,7 @@ import asyncio
 from bleak import BleakClient
 
 # Replace with the actual BLE MAC address of your ESP32S3
-address = "XX:XX:XX:XX:XX:XX"
+address = "34:85:18:71:f5:35"
 CHAR_UUID = "abcdefab-cdef-1234-5678-1234567890ab"
 
 async def send_command(command):
