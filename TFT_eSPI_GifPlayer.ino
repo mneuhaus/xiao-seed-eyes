@@ -25,7 +25,8 @@ class ServerCallbacks : public NimBLEServerCallbacks {
     Serial.println("Client connected");
   }
   void onDisconnect(NimBLEServer* pServer) {
-    Serial.println("Client disconnected - Restart advertising");
+    Serial.println("Client disconnected - Restart advertising soon");
+    delay(100);
     NimBLEDevice::startAdvertising();
   }
 };
@@ -268,7 +269,7 @@ void setup() {
   NimBLEService *pService = pServer->createService("12345678-1234-5678-1234-56789abcdef0");
   NimBLECharacteristic *pCharacteristic = pService->createCharacteristic(
       "abcdefab-cdef-1234-5678-1234567890ab",
-      NIMBLE_PROPERTY::WRITE
+      NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
   );
   pCharacteristic->setCallbacks(new BLECallbacks());
   pService->start();
