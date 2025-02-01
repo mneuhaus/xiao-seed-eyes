@@ -11,6 +11,8 @@ std::string bleCommand = "";
 class BLECallbacks : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* pCharacteristic) {
     std::string value = pCharacteristic->getValue();
+    Serial.print("BLE command received: ");
+    Serial.println(value.c_str());
     if (!value.empty()) {
       bleCommand = value;
     }
@@ -328,8 +330,8 @@ void loop() {
     }
     bleCommand = "";
   } else {
-    // No new command: maintain current display.
-    delay(100);
+    Serial.println("Loop running, no BLE command.");
+    delay(1000);
   }
 }
 
