@@ -287,15 +287,46 @@ void setup() {
 
   Serial.begin(115200);
   
-  SPI.begin(8, 9, 10, 2);
-  // (SCK = D8, MISO = D9, MOSI = D10, CS = D2)
-  
-  pinMode(2, OUTPUT);  // Set CS (D2) as output per Xiao's wiring
-  Serial.println("DEBUG: Initializing SD card...");
-  while (!SD.begin(2)) {  // Using GPIO 2 as chip-select pin
-    Serial.println("DEBUG: SD card initialization failed! Retrying in 500ms...");
-    delay(500);
+  pinMode(D2, OUTPUT);
+  if (!SD.begin(D2)) {
+    Serial.println("initialization failed!");
+    return;
   }
+  Serial.println("initialization done.");
+
+  File myFile;
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  myFile = SD.open("/test.txt", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    Serial.print("Writing to test.txt...");
+    myFile.println("testing 1, 2, 3.");
+    // close the file:
+    myFile.close();
+    Serial.println("done.");
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
+  }
+
+  // re-open the file for reading:
+  myFile = SD.open("/test.txt");
+  if (myFile) {
+    Serial.println("test.txt:");
+
+    // read from the file until there's nothing else in it:
+    while (myFile.available()) {
+      Serial.write(myFile.read());
+    }
+    // close the file:
+    myFile.close();
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening test.txt");
+  }
+
   Serial.println("DEBUG: SD card initialized successfully.");
   if (!SD.exists("/gif")) {
     Serial.println("DEBUG: Creating /gif directory...");
@@ -304,7 +335,7 @@ void setup() {
   
   WiFi.mode(WIFI_STA);
   
-  const char* ssid = "neuhaus.nrw";
+  const char* ssid = "neuhaus.nrw_2.4";
   const char* password = "galactic.poop.bear";
   Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, password);
