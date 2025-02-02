@@ -5,34 +5,13 @@
 #include <SD.h>
 #include <math.h>
 #include <algorithm>
-#include <NimBLEDevice.h>
+#include <WiFi.h>
+#include <WebServer.h>
 
-std::string bleCommand = "";
+WebServer server(80);
 
-class BLECallbacks : public NimBLECharacteristicCallbacks {
-  void onWrite(NimBLECharacteristic* pCharacteristic) {
-    std::string value = pCharacteristic->getValue();
-    value.erase(std::remove(value.begin(), value.end(), '\n'), value.end());
-    value.erase(std::remove(value.begin(), value.end(), '\r'), value.end());
-    Serial.print("BLE command received: ");
-    Serial.println(value.c_str());
-    Serial.flush();
-    if (!value.empty()) {
-      bleCommand = value;
-    }
-  }
-};
 
-class ServerCallbacks : public NimBLEServerCallbacks {
-  void onConnect(NimBLEServer* pServer) {
-    Serial.println("Client connected");
-  }
-  void onDisconnect(NimBLEServer* pServer) {
-    Serial.println("Client disconnected - Restart advertising soon");
-    delay(100);
-    NimBLEDevice::startAdvertising();
-  }
-};
+
 
 #ifdef ARDUINO_ARCH_RP2350
 #undef PICO_BUILD
@@ -266,83 +245,74 @@ void setup() {
   tft.setRotation(2);
   tft.fillScreen(TFT_BLACK);
 
-  NimBLEDevice::init("EyeController");
-  NimBLEServer *pServer = NimBLEDevice::createServer();
-  pServer->setCallbacks(new ServerCallbacks());
-  NimBLEService *pService = pServer->createService("12345678-1234-5678-1234-56789abcdef0");
-  NimBLECharacteristic *pCharacteristic = pService->createCharacteristic(
-      "abcdefab-cdef-1234-5678-1234567890ab",
-      NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
-  );
-  pCharacteristic->setCallbacks(new BLECallbacks());
-  pService->start();
-  NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID("12345678-1234-5678-1234-56789abcdef0");
-  NimBLEAdvertisementData scanResponse;
-  scanResponse.setName("EyeController");
-  pAdvertising->setScanResponseData(scanResponse);
-  pAdvertising->start();
   Serial.begin(115200);
-  Serial.println("Advertising started!");
+  
+  const char* ssid = "neuhaus.nrw";
+  const char* password = "galactic.poop.bear";
+  Serial.print("Connecting to WiFi");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println(" Connected!");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString("EyeController Ready", tft.width()/2 - 70, tft.height()/2);
-  Serial.print("BLE Address: ");
-  Serial.println(NimBLEDevice::getAddress().toString().c_str());
+  tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
+
+  server.on("/", []() {
+    server.send(200, "text/plain", "Web API is running");
+  });
+  server.on("/open", []() {
+    tft.fillScreen(TFT_BLACK);
+    tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
+    tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
+    tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
+    server.send(200, "text/plain", "Executed command: open");
+  });
+  server.on("/close", []() {
+    tft.fillScreen(TFT_BLACK);
+    tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
+    tft.drawLine(tft.width()/2 - 50, tft.height()/2 + 1, tft.width()/2 + 50, tft.height()/2 + 1, TFT_WHITE);
+    server.send(200, "text/plain", "Executed command: close");
+  });
+  server.on("/blink", []() {
+    tft.fillScreen(TFT_BLACK);
+    tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
+    delay(200);
+    tft.fillScreen(TFT_BLACK);
+    tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
+    tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
+    tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
+    server.send(200, "text/plain", "Executed command: blink");
+  });
+  server.on("/colorful", []() {
+    unsigned long time = millis();
+    for (int yPos = 0; yPos < tft.height(); yPos += 10) {
+      for (int xPos = 0; xPos < tft.width(); xPos += 10) {
+        float wave = sin((xPos + time / 10.0) * 0.05) + cos((yPos + time / 10.0) * 0.05);
+        uint16_t color = tft.color565(
+          (int)((sin(wave + time / 1000.0) + 1) * 127.5),
+          (int)((cos(wave + time / 1000.0) + 1) * 127.5),
+          (int)(((sin(wave) + cos(wave)) / 2 + 1) * 127.5)
+        );
+        tft.fillRect(xPos, yPos + (int)(10 * sin((xPos + time / 100.0) * 0.1)), 10, 10, color);
+      }
+    }
+    server.send(200, "text/plain", "Executed command: colorful");
+  });
+
+  server.begin();
+  Serial.println("HTTP server started");
   delay(2000);
 }
 
 
 
 void loop() {
-  if (bleCommand != "") {
-    Serial.print("Received BLE command: ");
-    Serial.println(bleCommand.c_str());
-    Serial.print("Debug: Processing command: ");
-    Serial.println(bleCommand.c_str());
-    if (bleCommand == "open") {
-      // Draw open eye: white sclera, blue iris, black pupil.
-      tft.fillScreen(TFT_BLACK);
-      tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
-      tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
-      tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
-      Serial.println("Debug: Executed command: open");
-    } else if (bleCommand == "close") {
-      // Draw closed eye: a horizontal white line.
-      tft.fillScreen(TFT_BLACK);
-      tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
-      tft.drawLine(tft.width()/2 - 50, tft.height()/2 + 1, tft.width()/2 + 50, tft.height()/2 + 1, TFT_WHITE);
-      Serial.println("Debug: Executed command: close");
-    } else if (bleCommand == "blink") {
-      // Blink: closed then open.
-      tft.fillScreen(TFT_BLACK);
-      tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
-      delay(200);
-      tft.fillScreen(TFT_BLACK);
-      tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
-      tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
-      tft.fillCircle(tft.width()/2, tft.height()/2, 10, TFT_BLACK);
-      Serial.println("Debug: Executed command: blink");
-    } else if (bleCommand == "colorful") {
-      // Funky colorful wavy effect.
-      unsigned long time = millis();
-      for (int yPos = 0; yPos < tft.height(); yPos += 10) {
-        for (int xPos = 0; xPos < tft.width(); xPos += 10) {
-          float wave = sin((xPos + time / 10.0) * 0.05) + cos((yPos + time / 10.0) * 0.05);
-          uint16_t color = tft.color565(
-            (int)((sin(wave + time / 1000.0) + 1) * 127.5),
-            (int)((cos(wave + time / 1000.0) + 1) * 127.5),
-            (int)(((sin(wave) + cos(wave)) / 2 + 1) * 127.5)
-          );
-          tft.fillRect(xPos, yPos + (int)(10 * sin((xPos + time / 100.0) * 0.1)), 10, 10, color);
-        }
-      }
-      Serial.println("Debug: Executed command: colorful");
-    }
-    bleCommand = "";
-  } else {
-    Serial.println("Loop running, no BLE command.");
-    delay(1000);
-  }
+  server.handleClient();
 }
 
