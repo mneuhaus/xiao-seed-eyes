@@ -11,7 +11,9 @@ This will:
 2. Scale each GIF to cover 240x240 pixels while maintaining aspect ratio
 3. Center-crop the scaled GIF to exactly 240x240 pixels
 4. Optimize each GIF using gifsicle
-5. Save the results to the output directory
+5. Save the results to the output directory:
+   - Optimized file with "_o" suffix
+   - Preview file with "_preview" suffix (contains only first frame)
 
 Requirements:
 - Python 3 with Pillow package installed

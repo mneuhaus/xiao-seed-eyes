@@ -6,6 +6,72 @@ import subprocess
 import math
 from PIL import Image
 
+def create_preview(input_file, preview_file):
+    try:
+        with Image.open(input_file) as im:
+            width, height = im.size
+    except Exception as e:
+        print(f"Error opening {input_file} for preview: {e}")
+        return False
+
+    if width < height:
+        # Portrait: resize width to 240 and crop vertically.
+        factor = 240 / float(width)
+        new_height = int(math.ceil(height * factor))
+        crop_y = (new_height - 240) // 2
+        command = [
+            "gifsicle",
+            "--resize-width", "240",
+            f"--crop=0,{crop_y}+240x240",
+            "--optimize=3",
+            "--lossy=80",
+            "--colors=128",
+            input_file,
+            "#0",   # select only the first frame
+            "-o",
+            preview_file
+        ]
+        print(f"Preview Portrait: resizing width to 240, new height {new_height}, crop_y {crop_y}")
+    elif width > height:
+        # Landscape: resize height to 240 and crop horizontally.
+        factor = 240 / float(height)
+        new_width = int(math.ceil(width * factor))
+        crop_x = (new_width - 240) // 2
+        command = [
+            "gifsicle",
+            "--resize-height", "240",
+            f"--crop={crop_x},0+240x240",
+            "--optimize=3",
+            "--lossy=80",
+            "--colors=128",
+            input_file,
+            "#0",   # select only the first frame
+            "-o",
+            preview_file
+        ]
+        print(f"Preview Landscape: resizing height to 240, new width {new_width}, crop_x {crop_x}")
+    else:
+        # Square: simply resize.
+        command = [
+            "gifsicle",
+            "--resize=240x240",
+            "--optimize=3",
+            "--lossy=80",
+            "--colors=128",
+            input_file,
+            "#0",   # select only the first frame
+            "-o",
+            preview_file
+        ]
+        print("Preview Square: resizing to 240x240")
+    
+    print("Executing preview command:", " ".join(command))
+    result = subprocess.run(command)
+    if result.returncode != 0:
+        print(f"Error processing preview for {input_file}")
+        return False
+    return True
+
 def optimize_gif(input_file, output_file):
     try:
         with Image.open(input_file) as im:
@@ -94,6 +160,10 @@ def main():
         output_filename = base + "_o" + ext
         output_file = os.path.join(input_dir, output_filename)
         optimize_gif(input_file, output_file)
+        
+        preview_filename = base + "_preview" + ext
+        preview_file = os.path.join(input_dir, preview_filename)
+        create_preview(input_file, preview_file)
 
 if __name__ == "__main__":
     main()
