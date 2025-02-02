@@ -140,16 +140,20 @@ def main():
     parser = argparse.ArgumentParser(
         description="Optimize all GIF files in an input directory for the TFT device: center-crop to 240x240 and optimize with gifsicle"
     )
-    parser.add_argument("input_dir", help="Path to the directory containing GIF files (optimized files will get an _o suffix)")
+    parser.add_argument("input_dir", help="Path to the directory containing original GIF files")
+    parser.add_argument("output_dir", help="Path to the directory where optimized GIFs and previews will be stored")
     args = parser.parse_args()
 
     input_dir = args.input_dir
+    output_dir = args.output_dir
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     if not os.path.isdir(input_dir):
         print(f"Error: input directory {input_dir} does not exist or is not a directory.")
         sys.exit(1)
 
-    gif_files = [f for f in os.listdir(input_dir) if f.lower().endswith(".gif") and not f.lower().endswith("_o.gif")]
+    gif_files = [f for f in os.listdir(input_dir) if f.lower().endswith(".gif") and not f.lower().endswith("_o.gif") and not f.lower().endswith("_preview.gif")]
     if not gif_files:
         print("No GIF files found in the input directory.")
         sys.exit(0)
@@ -158,11 +162,11 @@ def main():
         input_file = os.path.join(input_dir, filename)
         base, ext = os.path.splitext(filename)
         output_filename = base + "_o" + ext
-        output_file = os.path.join(input_dir, output_filename)
+        output_file = os.path.join(output_dir, output_filename)
         optimize_gif(input_file, output_file)
         
         preview_filename = base + "_preview" + ext
-        preview_file = os.path.join(input_dir, preview_filename)
+        preview_file = os.path.join(output_dir, preview_filename)
         create_preview(input_file, preview_file)
 
 if __name__ == "__main__":
