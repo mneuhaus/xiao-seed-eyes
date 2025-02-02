@@ -321,16 +321,36 @@ void setup() {
   prefs.begin("display", false);
   int rotation = prefs.getInt("rotation", 0);  // 0-3 for quarter turns
   tft.setRotation(rotation);
+  
   tft.fillScreen(TFT_BLACK);
+  tft.setTextSize(2);
+  tft.setTextDatum(MC_DATUM); // center text
+  // Show initial statuses:
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.drawString("SD: waiting", tft.width()/2, 20);
+  tft.drawString("WiFi: waiting", tft.width()/2, 50);
 
   Serial.begin(115200);
   
   pinMode(D2, OUTPUT);
+  
+  // Update SD status to "initializing" (yellow)
+  tft.fillRect(0, 0, tft.width(), 40, TFT_BLACK); // clear top area
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.drawString("SD: initializing", tft.width()/2, 20);
+  
   if (!SD.begin(D2)) {
-    Serial.println("initialization failed!");
+    tft.fillRect(0, 0, tft.width(), 40, TFT_BLACK);
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+    tft.drawString("SD: failed", tft.width()/2, 20);
+    Serial.println("SD initialization failed!");
     return;
+  } else {
+    tft.fillRect(0, 0, tft.width(), 40, TFT_BLACK);
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    tft.drawString("SD: initialized", tft.width()/2, 20);
+    Serial.println("SD initialized.");
   }
-  Serial.println("initialization done.");
 
   File myFile;
   // open the file. note that only one file can be open at a time,
@@ -375,16 +395,39 @@ void setup() {
   
   const char* ssid = "neuhaus.nrw_2.4";
   const char* password = "galactic.poop.bear";
+  
+  // Update WiFi status to "connecting" (yellow)
+  tft.fillRect(0, 40, tft.width(), 40, TFT_BLACK);
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.drawString("WiFi: connecting", tft.width()/2, 50);
+  
   Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  
+  unsigned long wifiTimeout = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - wifiTimeout) < 15000) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println(" Connected!");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    tft.fillRect(0, 40, tft.width(), 40, TFT_BLACK);
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    tft.drawString("WiFi: connected", tft.width()/2, 50);
+    String ip = WiFi.localIP().toString();
+    tft.drawString("IP: " + ip, tft.width()/2, 80);
+    Serial.println(" Connected!");
+    Serial.print("IP Address: ");
+    Serial.println(ip);
+  } else {
+    tft.fillRect(0, 40, tft.width(), 40, TFT_BLACK);
+    tft.setTextColor(TFT_RED, TFT_BLACK);
+    tft.drawString("WiFi: failed", tft.width()/2, 50);
+    Serial.println("WiFi connection failed!");
+  }
 
+  delay(2000); // Show status for 2 seconds
+  
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
