@@ -173,6 +173,7 @@ int gifPlay( char* gifPath )
     return maxLoopsDuration;
   }
 
+  const float speedFactor = 0.5; // adjust this value to fine-tune playback speed
   int frameDelay = 0; // store delay for the last frame
   int then = 0; // store overall delay
   bool showcomment = false;
@@ -193,13 +194,14 @@ int gifPlay( char* gifPath )
     if( showcomment )
       if (gif.getComment(GifComment))
         // log_n("GIF Comment: %s", GifComment);
-    then += frameDelay;
+    unsigned long adjustedDelay = (unsigned long)(frameDelay * speedFactor);
+    then += adjustedDelay;
     if( then > maxGifDuration ) { // avoid being trapped in infinite GIF's
       // log_w("Broke the GIF loop, max duration exceeded");
       break;
     }
     unsigned long frameStart = millis();
-    while (millis() - frameStart < frameDelay) {
+    while (millis() - frameStart < adjustedDelay) {
       server.handleClient();
       delay(1);
     }
