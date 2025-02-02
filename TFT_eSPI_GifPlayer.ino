@@ -286,6 +286,19 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   Serial.begin(115200);
+  
+  Serial.println("DEBUG: Initializing SD card...");
+  if (!SD.begin(5)) {  // Using GPIO 5 as chip-select pin
+    Serial.println("DEBUG: SD card initialization failed!");
+    while(1); // Don't proceed if SD init failed
+  } else {
+    Serial.println("DEBUG: SD card initialized successfully.");
+    if (!SD.exists("/gif")) {
+      Serial.println("DEBUG: Creating /gif directory...");
+      SD.mkdir("/gif");
+    }
+  }
+  
   WiFi.mode(WIFI_STA);
   
   const char* ssid = "neuhaus.nrw";
