@@ -40,6 +40,7 @@ static File FSGifFile; // temp gif file holder
 static File GifRootFolder; // directory listing
 std::vector<std::string> GifFiles; // GIF files path
 static File uploadFile; // file upload handler
+bool uploadTooLarge = false; // flag for oversized uploads
 #define DISPLAY_WIDTH 240
 
 static void MyCustomDelay( unsigned long ms ) {
@@ -277,16 +278,27 @@ String getGifInventoryApi(const char* basePath) {
 
 void handleFileUpload() {
   HTTPUpload& upload = server.upload();
+  const unsigned long MAX_SIZE = 10485760; // 10 MB in bytes
+
   if(upload.status == UPLOAD_FILE_START) {
+    if(upload.totalSize > MAX_SIZE) {
+      uploadTooLarge = true;
+      Serial.println("Upload refused: file too large");
+      return;
+    }
     String fullPath = "/gif/" + String(upload.filename);
     if(SD.exists(fullPath.c_str())) {
       SD.remove(fullPath.c_str());
     }
     uploadFile = SD.open(fullPath.c_str(), FILE_WRITE);
   } else if(upload.status == UPLOAD_FILE_WRITE) {
+    if(uploadTooLarge)
+      return;
     if(uploadFile)
       uploadFile.write(upload.buf, upload.currentSize);
   } else if(upload.status == UPLOAD_FILE_END) {
+    if(uploadTooLarge)
+      return;
     if(uploadFile)
       uploadFile.close();
   }
@@ -489,6 +501,11 @@ void setup() {
     server.send(200, "text/html", html);
   });
   server.on("/upload", HTTP_POST, []() {
+    if(uploadTooLarge) {
+      server.send(400, "text/plain", "Upload refused: file too large");
+      uploadTooLarge = false; // reset for the next upload
+      return;
+    }
     server.sendHeader("Location", "/?upload=success");
     server.send(302, "text/plain", "");
   }, handleFileUpload);
