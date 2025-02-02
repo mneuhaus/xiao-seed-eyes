@@ -308,16 +308,25 @@ void setup() {
     String gifListHtml = "";
     File root = SD.open("/gif");
     if (root && root.isDirectory()) {
+      Serial.println("DEBUG: Successfully opened /gif directory for scanning.");
       File file = root.openNextFile();
       while (file) {
+        Serial.print("DEBUG: Processing file: ");
         Serial.println(file.name());
         if (!file.isDirectory()) {
           String fname = file.name();
+          if (fname.endsWith(".gif") || fname.endsWith(".GIF")) {
+            Serial.print("DEBUG: Found GIF file: ");
+            Serial.println(fname);
+          }
           gifListHtml += "<button class='btn btn-secondary m-1' onclick=\"sendCommand('/playgif?name=" + fname + "')\">" + fname + "</button>";
         }
         file = root.openNextFile();
       }
+      Serial.println("DEBUG: Completed /gif directory scan.");
       root.close();
+    } else {
+      Serial.println("DEBUG: Failed to open /gif directory.");
     }
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
     html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
