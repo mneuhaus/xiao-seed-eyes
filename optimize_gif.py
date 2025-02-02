@@ -14,14 +14,27 @@ def optimize_gif(input_file, output_file):
         print(f"Error opening {input_file}: {e}")
         return False
 
-    # Compute scaling factor so that the resized image covers a 240x240 area.
-    # This ensures that the resized image is at least 240 in both dimensions.
-    factor = max(240 / width, 240 / height)
-    new_width = int(math.ceil(width * factor))
-    new_height = int(math.ceil(height * factor))
-    # Compute crop offsets (center the crop)
-    crop_x = (new_width - 240) // 2
-    crop_y = (new_height - 240) // 2
+    # Determine scaling and cropping based on the smaller side
+    if width < height:
+        # Portrait: resize width to 240, then crop vertical excess.
+        factor = 240 / width
+        new_width = 240
+        new_height = int(math.ceil(height * factor))
+        crop_x = 0
+        crop_y = (new_height - 240) // 2
+    elif width > height:
+        # Landscape: resize height to 240, then crop horizontal excess.
+        factor = 240 / height
+        new_height = 240
+        new_width = int(math.ceil(width * factor))
+        crop_x = (new_width - 240) // 2
+        crop_y = 0
+    else:
+        # Square image: simply resize to 240x240.
+        new_width = 240
+        new_height = 240
+        crop_x = 0
+        crop_y = 0
 
     resize_spec = f"{new_width}x{new_height}"
     crop_spec = f"240x240+{crop_x}+{crop_y}"
