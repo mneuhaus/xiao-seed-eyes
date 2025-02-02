@@ -246,6 +246,7 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
 
   Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
   
   const char* ssid = "neuhaus.nrw";
   const char* password = "galactic.poop.bear";
