@@ -440,15 +440,6 @@ void setup() {
     if (server.hasArg("upload") && server.arg("upload") == "success") {
       html += "<div class='alert alert-success mt-3' role='alert'>Upload successful</div>";
     }
-    html += "<div class='header text-center'><h1>TFT_eSPI GifPlayer API</h1></div>";
-    html += "<div class='mb-5'>";
-    html += "<h2>Commands</h2>";
-    html += "<div class='btn-group' role='group'>";
-    html += "<button class='btn btn-primary' onclick=\"sendCommand('/open')\">Open</button>";
-    html += "<button class='btn btn-primary' onclick=\"sendCommand('/close')\">Close</button>";
-    html += "<button class='btn btn-primary' onclick=\"sendCommand('/blink')\">Blink</button>";
-    html += "<button class='btn btn-primary' onclick=\"sendCommand('/colorful')\">Colorful</button>";
-    html += "</div></div>";
     html += "<div class='mb-5'><h2>GIF Previews</h2>" + gifListHtml + "</div>";
     html += "<div class='mb-5'><h2>Display Rotation</h2>";
     html += "<div class='btn-group' role='group'>";
@@ -457,6 +448,15 @@ void setup() {
     }
     html += "</div>";
     html += "</div>";
+    
+    html += "<div class='mb-5'>";
+    html += "<h2>Commands</h2>";
+    html += "<div class='btn-group' role='group'>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/open')\">Open</button>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/close')\">Close</button>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/blink')\">Blink</button>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/colorful')\">Colorful</button>";
+    html += "</div></div>";
     
     html += "<div class='mb-5'><h2>Upload GIF</h2>";
     html += "<form method='POST' action='/upload' enctype='multipart/form-data'>";
