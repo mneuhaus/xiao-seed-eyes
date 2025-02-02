@@ -265,7 +265,7 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
-    server.send(200, "text/plain", "Web API is running");
+    server.send(200, "text/plain", "Welcome to the TFT_eSPI GifPlayer API!\n\nAvailable endpoints:\n/ - Homepage\n/open - Opens display (draws circles)\n/close - Closes display (draws lines)\n/blink - Blinks the display\n/colorful - Shows colorful animation");
   });
   server.on("/open", []() {
     tft.fillScreen(TFT_BLACK);
