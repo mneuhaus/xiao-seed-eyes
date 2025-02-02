@@ -240,6 +240,29 @@ int getGifInventory( const char* basePath )
   return amount;
 }
 
+String getGifInventoryApi(const char* basePath) {
+  String json = "[";
+  File root = SD.open(basePath);
+  if(!root || !root.isDirectory()){
+    return json + "]";
+  }
+  File file = root.openNextFile();
+  bool first = true;
+  while(file) {
+    if(!file.isDirectory()){
+      if(!first) {
+        json += ",";
+      }
+      json += "\"" + String(file.name()) + "\"";
+      first = false;
+    }
+    file = root.openNextFile();
+  }
+  root.close();
+  json += "]";
+  return json;
+}
+
 void setup() {
   tft.begin();
   tft.setRotation(2);
@@ -265,7 +288,7 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
-    server.send(200, "text/plain", "Welcome to the TFT_eSPI GifPlayer API!\n\nAvailable endpoints:\n/ - Homepage\n/open - Opens display (draws circles)\n/close - Closes display (draws lines)\n/blink - Blinks the display\n/colorful - Shows colorful animation");
+    server.send(200, "text/plain", "Welcome to the TFT_eSPI GifPlayer API!\n\nAvailable endpoints:\n/ - Homepage\n/open - Opens display (draws circles)\n/close - Closes display (draws lines)\n/blink - Blinks the display\n/colorful - Shows colorful animation\n/gifs - List available GIFs");
   });
   server.on("/open", []() {
     tft.fillScreen(TFT_BLACK);
@@ -306,6 +329,10 @@ void setup() {
     server.send(200, "text/plain", "Executed command: colorful");
   });
 
+  server.on("/gifs", []() {
+    String json = getGifInventoryApi("/");
+    server.send(200, "application/json", json);
+  });
   server.begin();
   Serial.println("HTTP server started");
   delay(2000);
