@@ -319,8 +319,9 @@ void handleFileUpload() {
 void setup() {
   tft.begin();
   prefs.begin("display", false);
-  int savedRotation = prefs.getInt("rotation", 2);  // default to 2 if not saved
-  tft.setRotation(savedRotation);
+  int savedAngle = prefs.getInt("rotation", 0);  // default angle in degrees (0–360)
+  int physicalRotation = ((savedAngle + 45) / 90) % 4;  // round to nearest quarter turn
+  tft.setRotation(physicalRotation);
   tft.fillScreen(TFT_BLACK);
 
   Serial.begin(115200);
@@ -390,7 +391,7 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
-    int currentRotation = prefs.getInt("rotation", 2);
+    int currentRotation = prefs.getInt("rotation", 0);
     String gifListHtml = "<div class='row'>";
     File root = SD.open("/gif");
     if (root && root.isDirectory()) {
@@ -451,7 +452,7 @@ void setup() {
     html += "</div></div>";
     html += "<div class='mb-5'><h2>GIF Previews</h2>" + gifListHtml + "</div>";
     html += "<div class='mb-5'><h2>Display Rotation</h2>";
-    html += "<input type='range' id='rotateSlider' min='0' max='3' step='1' value='" + String(currentRotation) + "' oninput='updateRotation(this.value)'>";
+    html += "<input type='range' id='rotateSlider' min='0' max='360' step='1' value='" + String(currentRotation) + "' oninput='updateRotation(this.value)'>";
     html += " <span id='rotateValue'>" + String(currentRotation) + "</span>";
     html += "</div>";
     
@@ -571,12 +572,13 @@ void setup() {
   });
   server.on("/rotate", []() {
     if (server.hasArg("value")) {
-      int newRotation = server.arg("value").toInt();
-      if (newRotation < 0) newRotation = 0;
-      if (newRotation > 3) newRotation = 3;
-      prefs.putInt("rotation", newRotation);
-      tft.setRotation(newRotation);
-      server.send(200, "text/plain", "Rotation updated to " + String(newRotation));
+      int newAngle = server.arg("value").toInt();
+      if (newAngle < 0) newAngle = 0;
+      if (newAngle > 360) newAngle = 360;
+      prefs.putInt("rotation", newAngle);
+      int physicalRotation = ((newAngle + 45) / 90) % 4;
+      tft.setRotation(physicalRotation);
+      server.send(200, "text/plain", "Rotation updated to " + String(newAngle));
     } else {
       server.send(400, "text/plain", "Missing rotation value");
     }
