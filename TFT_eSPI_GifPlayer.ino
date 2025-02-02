@@ -292,15 +292,14 @@ void setup() {
   
   pinMode(2, OUTPUT);  // Set CS (D2) as output per Xiao's wiring
   Serial.println("DEBUG: Initializing SD card...");
-  if (!SD.begin(2)) {  // Using GPIO 2 as chip-select pin
-    Serial.println("DEBUG: SD card initialization failed!");
-    while(1); // Don't proceed if SD init failed
-  } else {
-    Serial.println("DEBUG: SD card initialized successfully.");
-    if (!SD.exists("/gif")) {
-      Serial.println("DEBUG: Creating /gif directory...");
-      SD.mkdir("/gif");
-    }
+  while (!SD.begin(2)) {  // Using GPIO 2 as chip-select pin
+    Serial.println("DEBUG: SD card initialization failed! Retrying in 500ms...");
+    delay(500);
+  }
+  Serial.println("DEBUG: SD card initialized successfully.");
+  if (!SD.exists("/gif")) {
+    Serial.println("DEBUG: Creating /gif directory...");
+    SD.mkdir("/gif");
   }
   
   WiFi.mode(WIFI_STA);
