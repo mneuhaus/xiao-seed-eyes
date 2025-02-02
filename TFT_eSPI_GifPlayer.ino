@@ -319,9 +319,8 @@ void handleFileUpload() {
 void setup() {
   tft.begin();
   prefs.begin("display", false);
-  int savedAngle = prefs.getInt("rotation", 0);  // default angle in degrees (0–360)
-  int physicalRotation = ((savedAngle + 45) / 90) % 4;  // round to nearest quarter turn
-  tft.setRotation(physicalRotation);
+  int rotation = prefs.getInt("rotation", 0);  // 0-3 for quarter turns
+  tft.setRotation(rotation);
   tft.fillScreen(TFT_BLACK);
 
   Serial.begin(115200);
@@ -452,8 +451,11 @@ void setup() {
     html += "</div></div>";
     html += "<div class='mb-5'><h2>GIF Previews</h2>" + gifListHtml + "</div>";
     html += "<div class='mb-5'><h2>Display Rotation</h2>";
-    html += "<input type='range' id='rotateSlider' min='0' max='360' step='1' value='" + String(currentRotation) + "' oninput='updateRotation(this.value)'>";
-    html += " <span id='rotateValue'>" + String(currentRotation) + "</span>";
+    html += "<div class='btn-group' role='group'>";
+    for(int i = 0; i < 4; i++) {
+      html += "<button class='btn btn-" + String(i == currentRotation ? "primary" : "secondary") + "' onclick='updateRotation(" + String(i) + ")'>" + String(i * 90) + "°</button>";
+    }
+    html += "</div>";
     html += "</div>";
     
     html += "<div class='mb-5'><h2>Upload GIF</h2>";
@@ -572,13 +574,12 @@ void setup() {
   });
   server.on("/rotate", []() {
     if (server.hasArg("value")) {
-      int newAngle = server.arg("value").toInt();
-      if (newAngle < 0) newAngle = 0;
-      if (newAngle > 360) newAngle = 360;
-      prefs.putInt("rotation", newAngle);
-      int physicalRotation = ((newAngle + 45) / 90) % 4;
-      tft.setRotation(physicalRotation);
-      server.send(200, "text/plain", "Rotation updated to " + String(newAngle));
+      int rotation = server.arg("value").toInt();
+      if (rotation < 0) rotation = 0;
+      if (rotation > 3) rotation = 3;
+      prefs.putInt("rotation", rotation);
+      tft.setRotation(rotation);
+      server.send(200, "text/plain", "Rotation updated to " + String(rotation * 90) + "°");
     } else {
       server.send(400, "text/plain", "Missing rotation value");
     }
