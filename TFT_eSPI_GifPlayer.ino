@@ -469,7 +469,6 @@ void setup() {
     html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));}</script>";
     html += "<script>";
     html += "function updateRotation(val){";
-    html += "document.getElementById('rotateValue').innerText = val;";
     html += "fetch('/rotate?value='+val).then(response=>response.text()).then(text=>console.log(text));";
     html += "}";
     html += "</script>";
