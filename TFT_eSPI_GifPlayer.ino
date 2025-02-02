@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <WiFi.h>
 #include <WebServer.h>
-#undef Serial
 
 WebServer server(80);
 
@@ -309,8 +308,8 @@ void setup() {
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
     html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
     html += "</head><body><div class=\"container mt-4\">";
-    if (server.hasArg(\"upload\") && server.arg(\"upload\") == \"success\") {
-      html += \"<div class='alert alert-success' role='alert'>Upload successful</div>\";
+    if (server.hasArg("upload") && server.arg("upload") == "success") {
+      html += "<div class='alert alert-success' role='alert'>Upload successful</div>";
     }
     html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
     html += "<h2>Commands</h2>";
