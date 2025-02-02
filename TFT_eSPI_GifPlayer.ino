@@ -392,6 +392,9 @@ void setup() {
             gifListHtml += "<div class='col-sm-6 col-md-4 col-lg-3 mb-3'>";
             gifListHtml += "<div class='card'>";
             String baseName = fname.substring(0, fname.lastIndexOf('.'));
+            if (baseName.endsWith("_o")) {
+              baseName = baseName.substring(0, baseName.length() - 2);
+            }
             String ext = fname.substring(fname.lastIndexOf('.'));
             String previewName = baseName + "_preview" + ext;
             String srcURL;
