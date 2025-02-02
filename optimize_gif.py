@@ -188,16 +188,19 @@ def main():
             continue
             
         input_file = os.path.join(input_dir, filename)
+        # Initialize flag indicating whether conversion was performed
+        converted = False
         # Determine working file (to be used for optimization)
         working_file = input_file
         ext = ext.lower()
-        if(ext == ".mp4"):
+        if ext == ".mp4":
             # For MP4, convert it first to a temporary GIF in the output folder
             base, _ = os.path.splitext(filename)
             converted_filename = base + "_converted.gif"
             working_file = os.path.join(output_dir, converted_filename)
             if not convert_mp4_to_gif(input_file, working_file):
                 continue   # Skip this file if conversion fails
+            converted = True
             ext = ".gif"  # Set extension as gif for further processing
         else:
             base, ext = os.path.splitext(filename)
@@ -251,6 +254,14 @@ def main():
                 print(f"Error rotating right for {output_file}")
             else:
                 print(f"Right rotated file created: {right_filepath}")
+                
+        # Clean up temporary converted file if it exists
+        if converted:
+            try:
+                os.remove(working_file)
+                print(f"Removed temporary converted file: {working_file}")
+            except Exception as e:
+                print(f"Error removing temporary converted file: {e}")
 
 if __name__ == "__main__":
     main()
