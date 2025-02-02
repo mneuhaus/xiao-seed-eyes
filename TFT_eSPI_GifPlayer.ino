@@ -392,7 +392,10 @@ void setup() {
             gifListHtml += "<div class='col-sm-6 col-md-4 col-lg-3 mb-3'>";
             gifListHtml += "<div class='card'>";
             gifListHtml += "<img src='/gif/" + fname + "' class='card-img-top' alt='" + fname + "' style='cursor:pointer;' onclick=\"sendCommand('/playgif?name=" + fname + "')\">";
-            gifListHtml += "<div class='card-body p-2'><p class='card-text text-center' style='font-size:0.8rem;'>" + fname + "</p></div>";
+            gifListHtml += "<div class='card-body p-2'>";
+            gifListHtml += "<p class='card-text text-center' style='font-size:0.8rem;'>" + fname + "</p>";
+            gifListHtml += "<button class='btn btn-danger btn-sm' onclick=\"if(confirm('Are you sure you want to delete " + fname + "?')) { sendCommand('/delete?name=" + fname + "'); window.location.reload(); }\">Delete</button>";
+            gifListHtml += "</div>";
             gifListHtml += "</div></div>";
           }
         }
@@ -509,6 +512,20 @@ void setup() {
     server.sendHeader("Location", "/?upload=success");
     server.send(302, "text/plain", "");
   }, handleFileUpload);
+  server.on("/delete", []() {
+    if (server.hasArg("name")) {
+      String gifName = server.arg("name");
+      String fullPath = "/gif/" + gifName;
+      if (SD.exists(fullPath.c_str())) {
+        SD.remove(fullPath.c_str());
+        server.send(200, "text/plain", "Deleted gif: " + gifName);
+      } else {
+        server.send(404, "text/plain", "Gif not found: " + gifName);
+      }
+    } else {
+      server.send(400, "text/plain", "Missing gif name");
+    }
+  });
   server.serveStatic("/gif", SD, "/gif");
   server.begin();
   Serial.println("HTTP server started");
