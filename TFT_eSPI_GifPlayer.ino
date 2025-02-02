@@ -191,12 +191,14 @@ int gifPlay( char* gifPath )
   }
 
   while (gif.playFrame(true, &frameDelay)) {
-    if( showcomment )
-      if (gif.getComment(GifComment))
+    if (showcomment) {
+      if (gif.getComment(GifComment)) {
         // log_n("GIF Comment: %s", GifComment);
+      }
+    }
     unsigned long adjustedDelay = (unsigned long)(frameDelay * speedFactor);
     then += adjustedDelay;
-    if( then > maxGifDuration ) { // avoid being trapped in infinite GIF's
+    if (then > maxGifDuration) { // avoid being trapped in infinite GIF's
       // log_w("Broke the GIF loop, max duration exceeded");
       break;
     }
