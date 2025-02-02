@@ -288,7 +288,22 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
-    server.send(200, "text/plain", "Welcome to the TFT_eSPI GifPlayer API!\n\nAvailable endpoints:\n/ - Homepage\n/open - Opens display (draws circles)\n/close - Closes display (draws lines)\n/blink - Blinks the display\n/colorful - Shows colorful animation\n/gifs - List available GIFs");
+    String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title></head><body>";
+    html += "<h1>Welcome to the TFT_eSPI GifPlayer API</h1>";
+    html += "<h2>Commands</h2>";
+    html += "<button onclick=\"sendCommand('/open')\">Open</button>";
+    html += "<button onclick=\"sendCommand('/close')\">Close</button>";
+    html += "<button onclick=\"sendCommand('/blink')\">Blink</button>";
+    html += "<button onclick=\"sendCommand('/colorful')\">Colorful</button>";
+    html += "<h2>Available GIFs</h2>";
+    html += "<div id='gifs'></div>";
+    html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>alert(text));} ";
+    html += "function loadGifs(){fetch('/gifs').then(response=>response.json()).then(data=>{let container = document.getElementById('gifs'); ";
+    html += "data.forEach(gif=>{let btn = document.createElement('button'); btn.innerHTML = gif; ";
+    html += "btn.onclick = ()=>sendCommand('/playgif?name='+encodeURIComponent(gif)); container.appendChild(btn);});});} ";
+    html += "window.onload=loadGifs;</script>";
+    html += "</body></html>";
+    server.send(200, "text/html", html);
   });
   server.on("/open", []() {
     tft.fillScreen(TFT_BLACK);
@@ -332,6 +347,15 @@ void setup() {
   server.on("/gifs", []() {
     String json = getGifInventoryApi("/");
     server.send(200, "application/json", json);
+  });
+  server.on("/playgif", []() {
+    if (server.hasArg("name")) {
+      String gifName = server.arg("name");
+      int playTime = gifPlay(const_cast<char*>(gifName.c_str()));
+      server.send(200, "text/plain", "Playing gif: " + gifName);
+    } else {
+      server.send(400, "text/plain", "Missing gif name");
+    }
   });
   server.begin();
   Serial.println("HTTP server started");
