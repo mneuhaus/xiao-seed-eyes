@@ -315,5 +315,6 @@ void setup() {
 
 void loop() {
   server.handleClient();
+  delay(1);
 }
 
