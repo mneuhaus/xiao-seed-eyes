@@ -72,6 +72,22 @@ def create_preview(input_file, preview_file):
         return False
     return True
 
+def convert_mp4_to_gif(input_file, output_file):
+    command = [
+        "ffmpeg",
+        "-y",                # Overwrite output file if it exists
+        "-hide_banner",
+        "-loglevel", "error",
+        "-i", input_file,
+        output_file
+    ]
+    print("Executing mp4→gif conversion command:", " ".join(command))
+    result = subprocess.run(command)
+    if result.returncode != 0:
+        print(f"Error converting {input_file} to gif")
+        return False
+    return True
+
 def optimize_gif(input_file, output_file):
     try:
         with Image.open(input_file) as im:
@@ -154,21 +170,35 @@ def main():
         print(f"Error: input directory {input_dir} does not exist or is not a directory.")
         sys.exit(1)
 
-    gif_files = [f for f in os.listdir(input_dir) if f.lower().endswith(".gif") and not f.lower().endswith("_o.gif") and not f.lower().endswith("_preview.gif")]
+    gif_files = [f for f in os.listdir(input_dir) if ((f.lower().endswith(".gif") and not (f.lower().endswith("_o.gif") or f.lower().endswith("_preview.gif"))) or f.lower().endswith(".mp4"))]
     if not gif_files:
         print("No GIF files found in the input directory.")
         sys.exit(0)
 
     for filename in gif_files:
         input_file = os.path.join(input_dir, filename)
-        base, ext = os.path.splitext(filename)
+        # Determine working file (to be used for optimization)
+        working_file = input_file
+        ext = os.path.splitext(filename)[1].lower()
+        if(ext == ".mp4"):
+            # For MP4, convert it first to a temporary GIF in the output folder
+            base, _ = os.path.splitext(filename)
+            converted_filename = base + "_converted.gif"
+            working_file = os.path.join(output_dir, converted_filename)
+            if not convert_mp4_to_gif(input_file, working_file):
+                continue   # Skip this file if conversion fails
+            ext = ".gif"  # Set extension as gif for further processing
+        else:
+            base, ext = os.path.splitext(filename)
+
+        # Drive optimization using working_file
         output_filename = base + "_o" + ext
         output_file = os.path.join(output_dir, output_filename)
-        optimize_gif(input_file, output_file)
+        optimize_gif(working_file, output_file)
         
         preview_filename = base + "_preview" + ext
         preview_file = os.path.join(output_dir, preview_filename)
-        create_preview(input_file, preview_file)
+        create_preview(working_file, preview_file)
 
         if args.rotate != 0:
             rotate_angle = args.rotate
