@@ -290,6 +290,7 @@ void setup() {
   SPI.begin(8, 9, 10, 2);
   // (SCK = D8, MISO = D9, MOSI = D10, CS = D2)
   
+  pinMode(2, OUTPUT);  // Set CS (D2) as output per Xiao's wiring
   Serial.println("DEBUG: Initializing SD card...");
   if (!SD.begin(2)) {  // Using GPIO 2 as chip-select pin
     Serial.println("DEBUG: SD card initialization failed!");
