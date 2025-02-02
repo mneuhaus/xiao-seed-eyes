@@ -23,3 +23,9 @@ Example:
 ```bash
 python3 optimize_gif.py path/to/input_gifs path/to/output_gifs
 ```
+
+Optional arguments:
+- `--rotate <degrees>`: Generate additional rotated versions of each GIF
+  - Creates `_left+<angle>.gif` (positive rotation)
+  - Creates `_right-<angle>.gif` (negative rotation)
+  Example: `python3 optimize_gif.py input/ output/ --rotate 90`

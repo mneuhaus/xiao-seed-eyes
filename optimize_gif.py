@@ -142,6 +142,7 @@ def main():
     )
     parser.add_argument("input_dir", help="Path to the directory containing original GIF files")
     parser.add_argument("output_dir", help="Path to the directory where optimized GIFs and previews will be stored")
+    parser.add_argument("--rotate", type=int, default=0, help="If set, rotate the optimized GIF by this many degrees. Produces additional _left+<angle>.gif and _right-<angle>.gif files.")
     args = parser.parse_args()
 
     input_dir = args.input_dir
@@ -168,6 +169,47 @@ def main():
         preview_filename = base + "_preview" + ext
         preview_file = os.path.join(output_dir, preview_filename)
         create_preview(input_file, preview_file)
+
+        if args.rotate != 0:
+            rotate_angle = args.rotate
+            # Build filenames for left and right outputs using the base name
+            left_filename = base + f"_left+{rotate_angle}" + ext
+            left_filepath = os.path.join(output_dir, left_filename)
+            right_filename = base + f"_right-{rotate_angle}" + ext
+            right_filepath = os.path.join(output_dir, right_filename)
+            
+            # Build commands using ImageMagick's "convert"
+            left_command = [
+                "convert",
+                output_file,
+                "-coalesce",
+                "-rotate", str(rotate_angle),
+                "-layers", "optimize",
+                "-loop", "0",
+                left_filepath
+            ]
+            right_command = [
+                "convert",
+                output_file,
+                "-coalesce",
+                "-rotate", "-" + str(rotate_angle),
+                "-layers", "optimize",
+                "-loop", "0",
+                right_filepath
+            ]
+            print("Executing left rotation command:", " ".join(left_command))
+            result_left = subprocess.run(left_command)
+            if result_left.returncode != 0:
+                print(f"Error rotating left for {output_file}")
+            else:
+                print(f"Left rotated file created: {left_filepath}")
+            
+            print("Executing right rotation command:", " ".join(right_command))
+            result_right = subprocess.run(right_command)
+            if result_right.returncode != 0:
+                print(f"Error rotating right for {output_file}")
+            else:
+                print(f"Right rotated file created: {right_filepath}")
 
 if __name__ == "__main__":
     main()
