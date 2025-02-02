@@ -308,6 +308,9 @@ void setup() {
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
     html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
     html += "</head><body><div class=\"container mt-4\">";
+    if (server.hasArg(\"upload\") && server.arg(\"upload\") == \"success\") {
+      html += \"<div class='alert alert-success' role='alert'>Upload successful</div>\";
+    }
     html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
     html += "<h2>Commands</h2>";
     html += "<div class=\"mb-4\">";
@@ -318,6 +321,14 @@ void setup() {
     html += "</div>";
     html += "<h2>Available GIFs</h2>";
     html += "<div id='gifs' class=\"mb-4\"></div>";
+    html += "<h2>Upload GIF</h2>";
+    html += "<form method='POST' action='/upload' enctype='multipart/form-data' class='mb-4'>";
+    html += "<div class='form-group'>";
+    html += "<label for='file'>Select GIF file:</label>";
+    html += "<input type='file' name='file' class='form-control-file' id='file'>";
+    html += "</div>";
+    html += "<button type='submit' class='btn btn-primary'>Upload</button>";
+    html += "</form>";
     html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));} ";
     html += "function loadGifs(){fetch('/gifs').then(response=>response.json()).then(data=>{let container = document.getElementById('gifs'); ";
     html += "data.forEach(gif=>{let btn = document.createElement('button'); btn.className = 'btn btn-secondary m-1'; ";
