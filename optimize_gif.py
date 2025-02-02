@@ -25,6 +25,8 @@ def optimize_gif(input_file, output_file):
             "--resize-width", "240",
             f"--crop=0,{crop_y}+240x240",
             "--optimize=3",
+            "--lossy=80",
+            "--colors=128",
             input_file,
             "-o",
             output_file
@@ -40,6 +42,8 @@ def optimize_gif(input_file, output_file):
             "--resize-height", "240",
             f"--crop={crop_x},0+240x240",
             "--optimize=3",
+            "--lossy=80",
+            "--colors=128",
             input_file,
             "-o",
             output_file
@@ -51,6 +55,8 @@ def optimize_gif(input_file, output_file):
             "gifsicle",
             "--resize=240x240",
             "--optimize=3",
+            "--lossy=80",
+            "--colors=128",
             input_file,
             "-o",
             output_file
