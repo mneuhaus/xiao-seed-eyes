@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 import subprocess
+import math
 from PIL import Image
 
 def optimize_gif(input_file, output_file):
@@ -13,16 +14,29 @@ def optimize_gif(input_file, output_file):
         print(f"Error opening {input_file}: {e}")
         return False
 
-    if width < 240 or height < 240:
-        print(f"Error: {input_file} is smaller than 240x240, skipping.")
-        return False
+    # Compute scaling factor so that the resized image covers a 240x240 area.
+    # This ensures that the resized image is at least 240 in both dimensions.
+    factor = max(240 / width, 240 / height)
+    new_width = int(math.ceil(width * factor))
+    new_height = int(math.ceil(height * factor))
+    # Compute crop offsets (center the crop)
+    crop_x = (new_width - 240) // 2
+    crop_y = (new_height - 240) // 2
 
-    x_off = (width - 240) // 2
-    y_off = (height - 240) // 2
-    crop_spec = f"240x240+{x_off}+{y_off}"
+    resize_spec = f"{new_width}x{new_height}"
+    crop_spec = f"240x240+{crop_x}+{crop_y}"
 
-    command = ["gifsicle", f"--crop={crop_spec}", "--optimize=3", input_file, "-o", output_file]
-    print(f"Processing: {input_file} -> {output_file} ({crop_spec})")
+    # Build the gifsicle command with resizing then cropping and optimizing
+    command = [
+        "gifsicle",
+        f"--resize={resize_spec}",
+        f"--crop={crop_spec}",
+        "--optimize=3",
+        input_file,
+        "-o",
+        output_file
+    ]
+    print(f"Processing: {input_file} -> {output_file} (resize: {resize_spec}, crop: {crop_spec})")
     result = subprocess.run(command)
     if result.returncode != 0:
         print(f"Error processing {input_file}")
