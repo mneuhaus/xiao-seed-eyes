@@ -41,6 +41,7 @@ static File GifRootFolder; // directory listing
 std::vector<std::string> GifFiles; // GIF files path
 static File uploadFile; // file upload handler
 bool uploadTooLarge = false; // flag for oversized uploads
+volatile bool cancelPlayback = false; // flag to cancel ongoing GIF playback
 #define DISPLAY_WIDTH 240
 
 static void MyCustomDelay( unsigned long ms ) {
@@ -173,6 +174,7 @@ int gifPlay( char* gifPath )
     return maxLoopsDuration;
   }
 
+  cancelPlayback = false; // Reset cancel flag before starting
   const float speedFactor = 0.5; // adjust this value to fine-tune playback speed
   int frameDelay = 0; // store delay for the last frame
   int then = 0; // store overall delay
@@ -191,6 +193,10 @@ int gifPlay( char* gifPath )
   }
 
   while (gif.playFrame(true, &frameDelay)) {
+    if (cancelPlayback) {
+      // Cancel the playback if a new command has arrived
+      break;
+    }
     if (showcomment) {
       if (gif.getComment(GifComment)) {
         // log_n("GIF Comment: %s", GifComment);
@@ -452,6 +458,7 @@ void setup() {
     server.send(200, "text/html", html);
   });
   server.on("/open", []() {
+    cancelPlayback = true;
     tft.fillScreen(TFT_BLACK);
     tft.fillCircle(tft.width()/2, tft.height()/2, 50, TFT_WHITE);
     tft.fillCircle(tft.width()/2, tft.height()/2, 30, TFT_BLUE);
@@ -459,12 +466,14 @@ void setup() {
     server.send(200, "text/plain", "Executed command: open");
   });
   server.on("/close", []() {
+    cancelPlayback = true;
     tft.fillScreen(TFT_BLACK);
     tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
     tft.drawLine(tft.width()/2 - 50, tft.height()/2 + 1, tft.width()/2 + 50, tft.height()/2 + 1, TFT_WHITE);
     server.send(200, "text/plain", "Executed command: close");
   });
   server.on("/blink", []() {
+    cancelPlayback = true;
     tft.fillScreen(TFT_BLACK);
     tft.drawLine(tft.width()/2 - 50, tft.height()/2, tft.width()/2 + 50, tft.height()/2, TFT_WHITE);
     delay(200);
@@ -475,6 +484,7 @@ void setup() {
     server.send(200, "text/plain", "Executed command: blink");
   });
   server.on("/colorful", []() {
+    cancelPlayback = true;
     unsigned long time = millis();
     for (int yPos = 0; yPos < tft.height(); yPos += 10) {
       for (int xPos = 0; xPos < tft.width(); xPos += 10) {
@@ -495,6 +505,7 @@ void setup() {
     server.send(200, "application/json", json);
   });
   server.on("/playgif", []() {
+    cancelPlayback = true;
     if (server.hasArg("name")) {
       String gifName = server.arg("name");
       String fullPath = "/gif/" + gifName;
