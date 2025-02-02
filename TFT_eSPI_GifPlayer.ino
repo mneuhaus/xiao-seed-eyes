@@ -305,10 +305,23 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
+    String gifListHtml = "";
+    File root = SD.open("/");
+    if (root && root.isDirectory()) {
+      File file = root.openNextFile();
+      while (file) {
+        if (!file.isDirectory()) {
+          String fname = file.name();
+          gifListHtml += "<button class='btn btn-secondary m-1' onclick=\"sendCommand('/playgif?name=" + fname + "')\">" + fname + "</button>";
+        }
+        file = root.openNextFile();
+      }
+      root.close();
+    }
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
     html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
     html += "</head><body><div class=\"container mt-4\">";
-    if (server.hasArg("upload") && server.arg("upload") == "success") {
+    if (server.hasArg(\"upload\") && server.arg(\"upload\") == \"success\") {
       html += "<div class='alert alert-success' role='alert'>Upload successful</div>";
     }
     html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
@@ -320,7 +333,7 @@ void setup() {
     html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/colorful')\">Colorful</button><br>";
     html += "</div>";
     html += "<h2>Available GIFs</h2>";
-    html += "<div id='gifs' class=\"mb-4\"></div>";
+    html += "<div class='mb-4'>" + gifListHtml + "</div>";
     html += "<h2>Upload GIF</h2>";
     html += "<form method='POST' action='/upload' enctype='multipart/form-data' class='mb-4'>";
     html += "<div class='form-group'>";
@@ -329,12 +342,7 @@ void setup() {
     html += "</div>";
     html += "<button type='submit' class='btn btn-primary'>Upload</button>";
     html += "</form>";
-    html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));} ";
-    html += "function loadGifs(){fetch('/gifs').then(response=>response.json()).then(data=>{let container = document.getElementById('gifs'); ";
-    html += "data.forEach(gif=>{let btn = document.createElement('button'); btn.className = 'btn btn-secondary m-1'; ";
-    html += "btn.innerHTML = gif; ";
-    html += "btn.onclick = ()=>sendCommand('/playgif?name='+encodeURIComponent(gif)); container.appendChild(btn);});});} ";
-    html += "window.onload=loadGifs;</script>";
+    html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));}</script>";
     html += "</div></body></html>";
     server.send(200, "text/html", html);
   });
