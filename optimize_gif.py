@@ -78,7 +78,7 @@ def convert_mp4_to_gif(input_file, output_file):
     # • If the input is landscape (width >= height), scale using height=240 (width auto-scaled)
     # • If the input is portrait (width < height), scale using width=240 (height auto-scaled)
     # Then, crop from the center to exactly 240x240.
-    filter_str = "scale=if(gte(iw,ih),-1,240):if(gte(iw,ih),240,-1),crop=240:240"
+    filter_str = "scale='if(gte(iw,ih),-1,240)':'if(gte(iw,ih),240,-1)',crop=240:240"
     command = [
         "ffmpeg",
         "-y",                # Overwrite output if it exists
