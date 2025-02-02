@@ -234,9 +234,12 @@ int getGifInventory( const char* basePath )
 
   while( file ) {
     if(!file.isDirectory()) {
-      GifFiles.push_back(std::string(file.name()));
-      amount++;
-      tft.drawString(String(amount), textPosX, textPosY );
+      String fname = file.name();
+      if (fname.charAt(0) != '.') {
+        GifFiles.push_back(std::string(fname.c_str()));
+        amount++;
+        tft.drawString(String(amount), textPosX, textPosY );
+      }
       file.close();
     }
     file = GifRootFolder.openNextFile();
@@ -256,11 +259,14 @@ String getGifInventoryApi(const char* basePath) {
   bool first = true;
   while(file) {
     if(!file.isDirectory()){
-      if(!first) {
-        json += ",";
+      String fname = file.name();
+      if(fname.charAt(0) != '.'){
+        if(!first) {
+          json += ",";
+        }
+        json += "\"" + fname + "\"";
+        first = false;
       }
-      json += "\"" + String(file.name()) + "\"";
-      first = false;
     }
     file = root.openNextFile();
   }
@@ -368,6 +374,10 @@ void setup() {
         Serial.println(file.name());
         if (!file.isDirectory()) {
           String fname = file.name();
+          if (fname.charAt(0) == '.') {
+            file = root.openNextFile();
+            continue;
+          }
           if (fname.endsWith(".gif") || fname.endsWith(".GIF")) {
             Serial.print("DEBUG: Found GIF file: ");
             Serial.println(fname);
