@@ -31,6 +31,23 @@ Open the Arduino project in the Arduino IDE and upload it to your board. Once ru
 5. On startup, the device initializes the SD card and WiFi. Monitor Serial output to confirm successful connection.
 6. Once running, access the web interface by navigating to the device's IP address in your browser.
 
+## Library Installation & Configuration
+
+For optimal performance – especially when using a Seeed Studio Round Display for XIAO – make sure you install the correct versions of the required libraries. Please follow these steps:
+
+1. Download and install the latest stable version of the Arduino IDE from https://www.arduino.cc/en/software.
+2. Configure the Arduino IDE for your specific Seeed Studio XIAO board. Detailed instructions for board configuration are available in the official guide: https://wiki.seeedstudio.com/get_start_round_display/
+3. Install the following libraries using Sketch > Include Library > Add .ZIP Library:
+  • TFT_eSPI – download from https://github.com/Seeed-Projects/SeeedStudio_TFT_eSPI
+  • LVGL – download from https://github.com/Seeed-Projects/SeeedStudio_lvgl
+  • Seeed_Arduino_RoundDisplay – download from https://github.com/Seeed-Studio/Seeed_Arduino_RoundDisplay
+4. In addition, install the I2C BM8563 RTC library via the Arduino Library Manager.
+5. Copy the 'lv_conf.h' file from the Seeed_Arduino_RoundDisplay library into the root directory of your Arduino libraries (e.g., C:\Users\[YourUserName]\Documents\Arduino\libraries) to ensure the correct configuration.
+
+For more detailed information, please refer to the official round display guide: https://wiki.seeedstudio.com/get_start_round_display/
+
+Note: Using the correct library versions and configurations is critical for ensuring compatibility with the Round Display hardware.
+
 ## GIF Optimization Tool
 
 The provided optimize_gif.py script optimizes GIF files (or converts MP4s) for the device.
