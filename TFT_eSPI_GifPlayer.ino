@@ -197,6 +197,11 @@ int gifPlay( char* gifPath )
       // log_w("Broke the GIF loop, max duration exceeded");
       break;
     }
+    unsigned long frameStart = millis();
+    while (millis() - frameStart < frameDelay) {
+      server.handleClient();
+      delay(1);
+    }
   }
 
   gif.close();
