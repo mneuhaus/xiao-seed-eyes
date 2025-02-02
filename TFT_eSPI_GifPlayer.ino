@@ -267,10 +267,11 @@ String getGifInventoryApi(const char* basePath) {
 void handleFileUpload() {
   HTTPUpload& upload = server.upload();
   if(upload.status == UPLOAD_FILE_START) {
-    if(SD.exists(upload.filename)) {
-      SD.remove(upload.filename);
+    String fullPath = "/gif/" + String(upload.filename);
+    if(SD.exists(fullPath.c_str())) {
+      SD.remove(fullPath.c_str());
     }
-    uploadFile = SD.open(upload.filename, FILE_WRITE);
+    uploadFile = SD.open(fullPath.c_str(), FILE_WRITE);
   } else if(upload.status == UPLOAD_FILE_WRITE) {
     if(uploadFile)
       uploadFile.write(upload.buf, upload.currentSize);
