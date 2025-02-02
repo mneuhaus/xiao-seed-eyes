@@ -310,15 +310,15 @@ void setup() {
     html += "</head><body><div class=\"container mt-4\">";
     html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
     html += "<h2>Commands</h2>";
-    html += "<div class=\"btn-group mb-4\" role=\"group\">";
-    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/open')\">Open</button>";
-    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/close')\">Close</button>";
-    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/blink')\">Blink</button>";
-    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/colorful')\">Colorful</button>";
+    html += "<div class=\"mb-4\">";
+    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/open')\">Open</button><br>";
+    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/close')\">Close</button><br>";
+    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/blink')\">Blink</button><br>";
+    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/colorful')\">Colorful</button><br>";
     html += "</div>";
     html += "<h2>Available GIFs</h2>";
     html += "<div id='gifs' class=\"mb-4\"></div>";
-    html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>alert(text));} ";
+    html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));} ";
     html += "function loadGifs(){fetch('/gifs').then(response=>response.json()).then(data=>{let container = document.getElementById('gifs'); ";
     html += "data.forEach(gif=>{let btn = document.createElement('button'); btn.className = 'btn btn-secondary m-1'; ";
     html += "btn.innerHTML = gif; ";
@@ -395,7 +395,8 @@ void setup() {
     server.send(200, "text/html", html);
   });
   server.on("/upload", HTTP_POST, []() {
-    server.send(200, "text/plain", "File Uploaded");
+    server.sendHeader("Location", "/?upload=success");
+    server.send(302, "text/plain", "");
   }, handleFileUpload);
   server.begin();
   Serial.println("HTTP server started");
