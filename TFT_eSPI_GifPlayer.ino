@@ -39,6 +39,7 @@ char GifComment[256];
 static File FSGifFile; // temp gif file holder
 static File GifRootFolder; // directory listing
 std::vector<std::string> GifFiles; // GIF files path
+static File uploadFile; // file upload handler
 #define DISPLAY_WIDTH 240
 
 static void MyCustomDelay( unsigned long ms ) {
@@ -263,6 +264,22 @@ String getGifInventoryApi(const char* basePath) {
   return json;
 }
 
+void handleFileUpload() {
+  HTTPUpload& upload = server.upload();
+  if(upload.status == UPLOAD_FILE_START) {
+    if(SD.exists(upload.filename)) {
+      SD.remove(upload.filename);
+    }
+    uploadFile = SD.open(upload.filename, FILE_WRITE);
+  } else if(upload.status == UPLOAD_FILE_WRITE) {
+    if(uploadFile)
+      uploadFile.write(upload.buf, upload.currentSize);
+  } else if(upload.status == UPLOAD_FILE_END) {
+    if(uploadFile)
+      uploadFile.close();
+  }
+}
+
 void setup() {
   tft.begin();
   tft.setRotation(2);
@@ -362,6 +379,24 @@ void setup() {
       server.send(400, "text/plain", "Missing gif name");
     }
   });
+  server.on("/upload", HTTP_GET, []() {
+    String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Upload GIF</title>";
+    html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
+    html += "</head><body><div class=\"container mt-4\">";
+    html += "<h1>Upload GIF</h1>";
+    html += "<form method='POST' action='/upload' enctype='multipart/form-data'>";
+    html += "<div class='form-group'>";
+    html += "<label for='file'>Select GIF file:</label>";
+    html += "<input type='file' name='file' class='form-control-file' id='file'>";
+    html += "</div>";
+    html += "<button type='submit' class='btn btn-primary'>Upload</button>";
+    html += "</form>";
+    html += "</div></body></html>";
+    server.send(200, "text/html", html);
+  });
+  server.on("/upload", HTTP_POST, []() {
+    server.send(200, "text/plain", "File Uploaded");
+  }, handleFileUpload);
   server.begin();
   Serial.println("HTTP server started");
   delay(2000);
