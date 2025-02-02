@@ -384,14 +384,23 @@ void setup() {
       while (file) {
         if (!file.isDirectory()) {
           String fname = file.name();
-          if (fname.charAt(0) == '.') {
+          if (fname.charAt(0) == '.' || fname.indexOf("_preview") != -1) {
             file = root.openNextFile();
             continue;
           }
           if (fname.endsWith(".gif") || fname.endsWith(".GIF")) {
             gifListHtml += "<div class='col-sm-6 col-md-4 col-lg-3 mb-3'>";
             gifListHtml += "<div class='card'>";
-            gifListHtml += "<img src='/gif/" + fname + "' class='card-img-top' alt='" + fname + "' style='cursor:pointer;' onclick=\"sendCommand('/playgif?name=" + fname + "')\">";
+            String baseName = fname.substring(0, fname.lastIndexOf('.'));
+            String ext = fname.substring(fname.lastIndexOf('.'));
+            String previewName = baseName + "_preview" + ext;
+            String srcURL;
+            if(SD.exists((String("/gif/") + previewName).c_str())) {
+              srcURL = "/gif/" + previewName;
+            } else {
+              srcURL = "/gif/" + fname;
+            }
+            gifListHtml += "<img src='" + srcURL + "' class='card-img-top' alt='" + fname + "' style='cursor:pointer;' onclick=\"sendCommand('/playgif?name=" + fname + "')\">";
             gifListHtml += "<div class='card-body p-2'>";
             gifListHtml += "<p class='card-text text-center' style='font-size:0.8rem;'>" + fname + "</p>";
             gifListHtml += "<button class='btn btn-danger btn-sm' onclick=\"if(confirm('Are you sure you want to delete " + fname + "?')) { sendCommand('/delete?name=" + fname + "'); window.location.reload(); }\">Delete</button>";
