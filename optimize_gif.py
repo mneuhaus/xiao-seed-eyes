@@ -51,7 +51,6 @@ def main():
     args = parser.parse_args()
 
     input_dir = args.input_dir
-    output_dir = args.output_dir
 
     if not os.path.isdir(input_dir):
         print(f"Error: input directory {input_dir} does not exist or is not a directory.")
