@@ -183,10 +183,14 @@ def main():
         sys.exit(0)
 
     for filename in gif_files:
+        base, ext = os.path.splitext(filename)
+        if "_preview" in base.lower():
+            continue
+            
         input_file = os.path.join(input_dir, filename)
         # Determine working file (to be used for optimization)
         working_file = input_file
-        ext = os.path.splitext(filename)[1].lower()
+        ext = ext.lower()
         if(ext == ".mp4"):
             # For MP4, convert it first to a temporary GIF in the output folder
             base, _ = os.path.splitext(filename)
