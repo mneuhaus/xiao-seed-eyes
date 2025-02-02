@@ -364,14 +364,12 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
-    String gifListHtml = "";
+    String gifListHtml = "<div class='row'>";
     File root = SD.open("/gif");
     if (root && root.isDirectory()) {
       Serial.println("DEBUG: Successfully opened /gif directory for scanning.");
       File file = root.openNextFile();
       while (file) {
-        Serial.print("DEBUG: Processing file: ");
-        Serial.println(file.name());
         if (!file.isDirectory()) {
           String fname = file.name();
           if (fname.charAt(0) == '.') {
@@ -379,42 +377,45 @@ void setup() {
             continue;
           }
           if (fname.endsWith(".gif") || fname.endsWith(".GIF")) {
-            Serial.print("DEBUG: Found GIF file: ");
-            Serial.println(fname);
+            gifListHtml += "<div class='col-sm-6 col-md-4 col-lg-3 mb-3'>";
+            gifListHtml += "<div class='card'>";
+            gifListHtml += "<img src='/gif/" + fname + "' class='card-img-top' alt='" + fname + "' style='cursor:pointer;' onclick=\"sendCommand('/playgif?name=" + fname + "')\">";
+            gifListHtml += "<div class='card-body p-2'><p class='card-text text-center' style='font-size:0.8rem;'>" + fname + "</p></div>";
+            gifListHtml += "</div></div>";
           }
-          gifListHtml += "<button class='btn btn-secondary m-1' onclick=\"sendCommand('/playgif?name=" + fname + "')\">" + fname + "</button>";
         }
         file = root.openNextFile();
       }
-      Serial.println("DEBUG: Completed /gif directory scan.");
+      gifListHtml += "</div>";
       root.close();
     } else {
       Serial.println("DEBUG: Failed to open /gif directory.");
     }
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
-    html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
-    html += "</head><body><div class=\"container mt-4\">";
+    html += "<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'>";
+    html += "<style>body { background-color: #f8f9fa; } .header { margin: 20px 0; }</style>";
+    html += "</head><body><div class='container'>";
     if (server.hasArg("upload") && server.arg("upload") == "success") {
-      html += "<div class='alert alert-success' role='alert'>Upload successful</div>";
+      html += "<div class='alert alert-success mt-3' role='alert'>Upload successful</div>";
     }
-    html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
+    html += "<div class='header text-center'><h1>TFT_eSPI GifPlayer API</h1></div>";
+    html += "<div class='mb-5'>";
     html += "<h2>Commands</h2>";
-    html += "<div class=\"mb-4\">";
-    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/open')\">Open</button><br>";
-    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/close')\">Close</button><br>";
-    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/blink')\">Blink</button><br>";
-    html += "<button class=\"btn btn-primary mb-2\" onclick=\"sendCommand('/colorful')\">Colorful</button><br>";
-    html += "</div>";
-    html += "<h2>Available GIFs</h2>";
-    html += "<div class='mb-4'>" + gifListHtml + "</div>";
-    html += "<h2>Upload GIF</h2>";
-    html += "<form method='POST' action='/upload' enctype='multipart/form-data' class='mb-4'>";
+    html += "<div class='btn-group' role='group'>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/open')\">Open</button>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/close')\">Close</button>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/blink')\">Blink</button>";
+    html += "<button class='btn btn-primary' onclick=\"sendCommand('/colorful')\">Colorful</button>";
+    html += "</div></div>";
+    html += "<div class='mb-5'><h2>GIF Previews</h2>" + gifListHtml + "</div>";
+    html += "<div class='mb-5'><h2>Upload GIF</h2>";
+    html += "<form method='POST' action='/upload' enctype='multipart/form-data'>";
     html += "<div class='form-group'>";
     html += "<label for='file'>Select GIF file:</label>";
     html += "<input type='file' name='file' class='form-control-file' id='file'>";
     html += "</div>";
     html += "<button type='submit' class='btn btn-primary'>Upload</button>";
-    html += "</form>";
+    html += "</form></div>";
     html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));}</script>";
     html += "</div></body></html>";
     server.send(200, "text/html", html);
@@ -491,6 +492,7 @@ void setup() {
     server.sendHeader("Location", "/?upload=success");
     server.send(302, "text/plain", "");
   }, handleFileUpload);
+  server.serveStatic("/gif", SD, "/gif");
   server.begin();
   Serial.println("HTTP server started");
   delay(2000);
