@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <WiFi.h>
 #include <WebServer.h>
+#undef Serial
 
 WebServer server(80);
 
