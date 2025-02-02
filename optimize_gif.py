@@ -23,7 +23,7 @@ def optimize_gif(input_file, output_file):
         command = [
             "gifsicle",
             "--resize-width", "240",
-            f"--crop=240x240+0+{crop_y}",
+            f"--crop=0,{crop_y}+240x240",
             "--optimize=3",
             input_file,
             "-o",
@@ -38,7 +38,7 @@ def optimize_gif(input_file, output_file):
         command = [
             "gifsicle",
             "--resize-height", "240",
-            f"--crop=240x240+{crop_x}+0",
+            f"--crop={crop_x},0+240x240",
             "--optimize=3",
             input_file,
             "-o",
@@ -49,13 +49,13 @@ def optimize_gif(input_file, output_file):
         # Square image: a simple resize will yield a 240x240 output.
         command = [
             "gifsicle",
-            "--resize", "240",
+            "--resize=240x240",
             "--optimize=3",
             input_file,
             "-o",
             output_file
         ]
-        print("Square image: resizing to 240")
+        print("Square image: resizing to 240x240")
     
     print("Executing command:", " ".join(command))
     result = subprocess.run(command)
