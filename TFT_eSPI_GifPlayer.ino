@@ -288,21 +288,26 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
-    String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title></head><body>";
-    html += "<h1>Welcome to the TFT_eSPI GifPlayer API</h1>";
+    String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
+    html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
+    html += "</head><body><div class=\"container mt-4\">";
+    html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
     html += "<h2>Commands</h2>";
-    html += "<button onclick=\"sendCommand('/open')\">Open</button>";
-    html += "<button onclick=\"sendCommand('/close')\">Close</button>";
-    html += "<button onclick=\"sendCommand('/blink')\">Blink</button>";
-    html += "<button onclick=\"sendCommand('/colorful')\">Colorful</button>";
+    html += "<div class=\"btn-group mb-4\" role=\"group\">";
+    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/open')\">Open</button>";
+    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/close')\">Close</button>";
+    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/blink')\">Blink</button>";
+    html += "<button class=\"btn btn-primary\" onclick=\"sendCommand('/colorful')\">Colorful</button>";
+    html += "</div>";
     html += "<h2>Available GIFs</h2>";
-    html += "<div id='gifs'></div>";
+    html += "<div id='gifs' class=\"mb-4\"></div>";
     html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>alert(text));} ";
     html += "function loadGifs(){fetch('/gifs').then(response=>response.json()).then(data=>{let container = document.getElementById('gifs'); ";
-    html += "data.forEach(gif=>{let btn = document.createElement('button'); btn.innerHTML = gif; ";
+    html += "data.forEach(gif=>{let btn = document.createElement('button'); btn.className = 'btn btn-secondary m-1'; ";
+    html += "btn.innerHTML = gif; ";
     html += "btn.onclick = ()=>sendCommand('/playgif?name='+encodeURIComponent(gif)); container.appendChild(btn);});});} ";
     html += "window.onload=loadGifs;</script>";
-    html += "</body></html>";
+    html += "</div></body></html>";
     server.send(200, "text/html", html);
   });
   server.on("/open", []() {
