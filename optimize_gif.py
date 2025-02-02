@@ -73,12 +73,19 @@ def create_preview(input_file, preview_file):
     return True
 
 def convert_mp4_to_gif(input_file, output_file):
+    # Use ffmpeg to convert MP4 to GIF with scaling and cropping.
+    # The filter chain does the following:
+    # • If the input is landscape (width >= height), scale using height=240 (width auto-scaled)
+    # • If the input is portrait (width < height), scale using width=240 (height auto-scaled)
+    # Then, crop from the center to exactly 240x240.
+    filter_str = "scale=if(gte(iw,ih),-1,240):if(gte(iw,ih),240,-1),crop=240:240"
     command = [
         "ffmpeg",
-        "-y",                # Overwrite output file if it exists
+        "-y",                # Overwrite output if it exists
         "-hide_banner",
         "-loglevel", "error",
         "-i", input_file,
+        "-vf", filter_str,
         output_file
     ]
     print("Executing mp4→gif conversion command:", " ".join(command))
