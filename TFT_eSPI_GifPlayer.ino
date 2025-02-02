@@ -450,7 +450,8 @@ void setup() {
   server.on("/playgif", []() {
     if (server.hasArg("name")) {
       String gifName = server.arg("name");
-      int playTime = gifPlay(const_cast<char*>(gifName.c_str()));
+      String fullPath = "/gif/" + gifName;
+      int playTime = gifPlay(const_cast<char*>(fullPath.c_str()));
       server.send(200, "text/plain", "Playing gif: " + gifName);
     } else {
       server.send(400, "text/plain", "Missing gif name");
