@@ -287,10 +287,11 @@ void setup() {
 
   Serial.begin(115200);
   
-  SPI.begin();
+  SPI.begin(8, 9, 10, 2);
+  // (SCK = D8, MISO = D9, MOSI = D10, CS = D2)
   
   Serial.println("DEBUG: Initializing SD card...");
-  if (!SD.begin(15)) {  // Using GPIO 15 as chip-select pin
+  if (!SD.begin(2)) {  // Using GPIO 2 as chip-select pin
     Serial.println("DEBUG: SD card initialization failed!");
     while(1); // Don't proceed if SD init failed
   } else {
