@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <Preferences.h>
 
 WebServer server(80);
+Preferences prefs;
 
 
 
@@ -316,7 +318,9 @@ void handleFileUpload() {
 
 void setup() {
   tft.begin();
-  tft.setRotation(2);
+  prefs.begin("display", false);
+  int savedRotation = prefs.getInt("rotation", 2);  // default to 2 if not saved
+  tft.setRotation(savedRotation);
   tft.fillScreen(TFT_BLACK);
 
   Serial.begin(115200);
@@ -386,6 +390,7 @@ void setup() {
   tft.drawString("Web API Ready", tft.width()/2 - 70, tft.height()/2);
 
   server.on("/", []() {
+    int currentRotation = prefs.getInt("rotation", 2);
     String gifListHtml = "<div class='row'>";
     File root = SD.open("/gif");
     if (root && root.isDirectory()) {
@@ -445,6 +450,11 @@ void setup() {
     html += "<button class='btn btn-primary' onclick=\"sendCommand('/colorful')\">Colorful</button>";
     html += "</div></div>";
     html += "<div class='mb-5'><h2>GIF Previews</h2>" + gifListHtml + "</div>";
+    html += "<div class='mb-5'><h2>Display Rotation</h2>";
+    html += "<input type='range' id='rotateSlider' min='0' max='3' step='1' value='" + String(currentRotation) + "' oninput='updateRotation(this.value)'>";
+    html += " <span id='rotateValue'>" + String(currentRotation) + "</span>";
+    html += "</div>";
+    
     html += "<div class='mb-5'><h2>Upload GIF</h2>";
     html += "<form method='POST' action='/upload' enctype='multipart/form-data'>";
     html += "<div class='form-group'>";
@@ -454,6 +464,12 @@ void setup() {
     html += "<button type='submit' class='btn btn-primary'>Upload</button>";
     html += "</form></div>";
     html += "<script>function sendCommand(cmd){fetch(cmd).then(response=>response.text()).then(text=>console.log(text));}</script>";
+    html += "<script>";
+    html += "function updateRotation(val){";
+    html += "document.getElementById('rotateValue').innerText = val;";
+    html += "fetch('/rotate?value='+val).then(response=>response.text()).then(text=>console.log(text));";
+    html += "}";
+    html += "</script>";
     html += "</div></body></html>";
     server.send(200, "text/html", html);
   });
@@ -553,6 +569,19 @@ void setup() {
       server.send(400, "text/plain", "Missing gif name");
     }
   });
+  server.on("/rotate", []() {
+    if (server.hasArg("value")) {
+      int newRotation = server.arg("value").toInt();
+      if (newRotation < 0) newRotation = 0;
+      if (newRotation > 3) newRotation = 3;
+      prefs.putInt("rotation", newRotation);
+      tft.setRotation(newRotation);
+      server.send(200, "text/plain", "Rotation updated to " + String(newRotation));
+    } else {
+      server.send(400, "text/plain", "Missing rotation value");
+    }
+  });
+
   server.serveStatic("/gif", SD, "/gif");
   server.begin();
   Serial.println("HTTP server started");
