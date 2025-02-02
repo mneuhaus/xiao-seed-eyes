@@ -306,10 +306,11 @@ void setup() {
 
   server.on("/", []() {
     String gifListHtml = "";
-    File root = SD.open("/");
+    File root = SD.open("/gif");
     if (root && root.isDirectory()) {
       File file = root.openNextFile();
       while (file) {
+        Serial.println(file.name());
         if (!file.isDirectory()) {
           String fname = file.name();
           gifListHtml += "<button class='btn btn-secondary m-1' onclick=\"sendCommand('/playgif?name=" + fname + "')\">" + fname + "</button>";
@@ -321,7 +322,7 @@ void setup() {
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>TFT_eSPI GifPlayer API</title>";
     html += "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">";
     html += "</head><body><div class=\"container mt-4\">";
-    if (server.hasArg(\"upload\") && server.arg(\"upload\") == \"success\") {
+    if (server.hasArg("upload") && server.arg("upload") == "success") {
       html += "<div class='alert alert-success' role='alert'>Upload successful</div>";
     }
     html += "<h1 class=\"mb-4\">Welcome to the TFT_eSPI GifPlayer API</h1>";
